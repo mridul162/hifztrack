@@ -5,7 +5,7 @@ These are initial flows for product discussion; exact screens and edge cases are
 ## Learner setup and practice (MVP)
 
 1. Register or sign in, then review profile and privacy settings.
-2. Find a Surah/Ayah using canonical Quran navigation/search.
+2. Select a Surah/Ayah or look up a reference using canonical navigation. Full-text/advanced search is an extended proposal, not MVP scope.
 3. Record a Sabaq range and its memorization status; review personal progress.
 4. Record Muraja'ah separately with revision type, notes, and self-assessment.
 5. Review personal dashboard and basic statistics.

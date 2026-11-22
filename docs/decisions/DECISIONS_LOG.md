@@ -8,7 +8,7 @@ Record approved decisions with ID, date, context, decision, consequences, and st
 
 ## ADR-002: Personal progress ownership
 
-**Status:** Accepted baseline. **Decision:** Memorization and revision records belong to individual users, not groups. **Reason:** A user can belong to multiple groups.
+**Status:** Accepted. **Decision:** Each user owns one central personal memorization record. Current Ayah status is represented once per `(user, Ayah)`; Sabaq history is stored separately. Groups receive permission-filtered views of the same record and never own duplicate progress copies. **Reason:** A user can belong to multiple groups and share different views with each. Correction, cancellation, and status-history semantics remain open under DEC-005.
 
 ## ADR-003: Group-specific sharing
 

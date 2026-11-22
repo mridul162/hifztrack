@@ -7,17 +7,18 @@ Status convention: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `VERIFIED`. All 
 | AUTH-01 | Registration, login, logout, secure sessions | MVP / P0 / FR-01 | — | Valid users can authenticate; invalid credentials fail safely; sessions end on logout. |
 | USER-01 | Profile and account settings | MVP / P0 / FR-02 | AUTH-01 | User can view/update allowed profile fields; private fields are not exposed to others. |
 | USER-02 | Personal account data portability | Extended proposal; release TBD | AUTH-01 | If retained, authenticated user can export only their own account data; distinct from original FR-17 progress-report export. |
-| QURAN-01 | Canonical Quran reference and navigation | MVP / P0 / FR-06 | — | Validated dataset covers 114 Surahs, 30 Juz, 6,236 Ayahs and 604 Madani Mushaf pages under a specified convention; stable Ayah IDs resolve; Juz/page coverage derives from canonical data. |
-| MEM-01 | Sabaq activity and current Ayah status | MVP / P0 / FR-07, FR-09 | AUTH-01, QURAN-01 | One current row per user/Ayah; separate immutable memorization activity; range follows canonical order; repeated submissions do not inflate progress; status transitions are controlled. |
+| QURAN-01 | Canonical Quran reference and navigation | MVP / P0 / FR-06 | — | Validated dataset covers 114 Surahs, 30 Juz, 6,236 Ayahs and 604 Madani Mushaf pages under a specified convention; stable Surah/Ayah IDs resolve; Juz/page navigation and coverage derive from canonical data. Does not require full-text search. |
+| QURAN-SEARCH-01 | Full Quran text or advanced search | Extended proposal; release TBD | QURAN-01 | Scope and release require owner approval; not part of P0 reference lookup/navigation. |
+| MEM-01 | Sabaq activity and current Ayah status | MVP / P0 / FR-07, FR-09 | AUTH-01, QURAN-01 | One current row per user/Ayah; separate preserved historical memorization activity with source SUBMITTED/CANCELLED states; range follows canonical order; repeated submissions do not inflate progress; status transitions are controlled. Cancellation semantics remain DEC-005. |
 | REV-01 | Muraja'ah sessions | MVP / P0 / FR-08 | AUTH-01, QURAN-01 | Separate revision session records range, type (`RECENT`, `OLD`, `FULL_JUZ`, `FULL_QURAN`), activity date, time, optional 1–5 self-rating and notes; revision never changes status automatically. |
 | GROUP-01 | Group creation and lifecycle | MVP / P0 / FR-03 | AUTH-01 | Authorized user creates, updates, and manages a group; group may be informal or organization-linked, with type/lifecycle. Delete versus archive policy remains open. |
 | GROUP-02 | Membership, invitations, roles | MVP / P0 / FR-04, FR-05 | AUTH-01, GROUP-01 | User can have different roles across groups; each membership has ADMIN/MENTOR/MEMBER role and PENDING/ACTIVE/SUSPENDED/LEFT state; group can have multiple admins/mentors; invitation token is random, hashed, expiring, revocable, optionally use-limited; only ACTIVE grants access. Join requests are an extended proposal. |
-| SHARE-01 | Per-group progress sharing | MVP / P0 / FR-10, FR-11 | USER-01, GROUP-02, MEM-01, REV-01 | Per-membership settings cover overall progress, memorization logs, revision logs, goals and assessments; default is private or summary-level; backend filters each response; sharing an assessment does not expose private memorization notes; changes apply to later requests; leaving revokes future access. API actor ambiguity is DEC-016. |
-| DASH-01 | Personal and group dashboards/member views | MVP / P0 / FR-11, FR-12 | MEM-01, REV-01, GROUP-02, SHARE-01 | Personal view shows total, LEARNING/STRONG portions, recent Sabaq/revision and memberships; group view shows member count, permitted member progress, recent activities and statistics; goals/announcements appear only when their P1 features ship. |
+| SHARE-01 | Per-group progress sharing | MVP / P0 / FR-10, FR-11 | USER-01, GROUP-02, MEM-01, REV-01 | Per-membership settings cover overall progress, memorization logs, revision logs, goals and assessments; default is private or summary-level; backend filters each response; sharing an assessment does not expose private memorization notes; changes apply to later requests; leaving revokes future access. Summary versus detailed visibility representation is DEC-023; API actor ambiguity is DEC-016. |
+| DASH-01 | Personal and group dashboards/member views | MVP / P0 / FR-11, FR-12 | MEM-01, REV-01, GROUP-02, SHARE-01 | Personal view shows total, LEARNING/STRONG portions, recent Sabaq/revision and memberships; group view shows member count, permitted current-state progress, recent activities and basic current-state summaries. Goals/announcements appear only when their P1 features ship; historical reports, participation analytics and advanced group metrics remain P1 (DEC-018). |
 | ANALYTICS-01 | Basic individual statistics | MVP / P0 / FR-09, FR-12 | MEM-01, REV-01 | Percentage uses 6,236 Ayahs as denominator and reports MEMORIZED and STRONG separately; values reconcile to per-Ayah state and activity. |
-| GOAL-01 | Individual and collective group targets; schedules are an extended proposal | Release 2 / P1 / FR-13 | AUTH-01, MEM-01, GROUP-02, QURAN-01 | Individual goals cover new memorization or revision with target/unit/date range; group goals are collective, not copies of members' goals; completion derives from defined activity. |
+| GOAL-01 | Individual and collective group targets; schedules are an extended proposal | Release 2 / P1 / FR-13 | AUTH-01, MEM-01, GROUP-02, QURAN-01 | Individual goals cover new memorization or revision with target/unit/date range; group goals are collective, not copies of members' goals; group goal type and completion calculation remain DEC-024. |
 | MENTOR-01 | Mentor assignment and learner monitoring | Release 2 / P1 / FR-14 | GROUP-02, SHARE-01 | Authorized parties establish/withdraw assignments; mentors assess only assigned members in their group; multiple mentors may assess a member in different groups; data relationships support this without changing personal record ownership. |
-| MENTOR-02 | Assessments and feedback | Release 2 / P1 / FR-14 | MENTOR-01, MEM-01 | Assessment is independent historical record, associated with learner submission, mentor and group; result is PASSED or NEEDS_IMPROVEMENT; authorized group members only; any coupled status update is transactional. |
+| MENTOR-02 | Assessments and feedback | Release 2 / P1 / FR-14 | MENTOR-01, MEM-01 | Assessment is a separate record associated with learner submission, mentor and group; result is PASSED or NEEDS_IMPROVEMENT; authorized group members only. It does not automatically change learner status; any future approved transition must be transactional (DEC-019). |
 | NOTIFY-01 | Notifications | Release 2 / P1 / FR-15 | USER-01 | Notification delivery and preferences follow privacy policy; delivery channels and schedules remain to specify. |
 | COMMUNITY-01 | Announcements | Release 2 / P1 / FR-15 | GROUP-02, SHARE-01 | Group announcements are visible within authorized scope and do not disclose unshared progress. |
 | COMMUNITY-02 | Challenges and milestones | Extended proposal / Release 2 | GROUP-02, GOAL-01 | Earlier initialization brief addition; group challenge is opt-in and honors sharing. Not an original FR requirement. |
@@ -43,6 +44,7 @@ For each feature implementation, expand the row into objective, user stories, fu
 | USER-02 | PR-USER-EXPORT-01 | Extended proposal | NOT_STARTED |
 | REPORT-01 | PR-REPORT-01 | P2 / later | NOT_STARTED |
 | QURAN-01 | PR-QURAN-01 | P0 | NOT_STARTED |
+| QURAN-SEARCH-01 | No original P0 requirement; extended proposal | TBD | NOT_STARTED |
 | MEM-01 | PR-MEM-01, PR-HIST-01, PR-SEC-01 | P0 | NOT_STARTED |
 | REV-01 | PR-REV-01, PR-HIST-01 | P0 | NOT_STARTED |
 | GROUP-01, GROUP-02 | PR-GROUP-01 | P0 | NOT_STARTED |
@@ -67,7 +69,8 @@ For each feature implementation, expand the row into objective, user stories, fu
 | Feature group | Required automated evidence before `VERIFIED` |
 |---|---|
 | AUTH-01, USER-01 | Valid/invalid authentication, session termination, ownership and private-field tests. |
-| QURAN-01 | Canonical Surah/Ayah resolution and Juz/Mushaf-page mapping integrity/search tests. |
+| QURAN-01 | Canonical Surah/Ayah lookup and Juz/Mushaf-page navigation/mapping integrity tests. |
+| QURAN-SEARCH-01 | If approved later, search relevance, text normalization and privacy tests. |
 | MEM-01, REV-01 | User ownership, history preservation, current-state calculation, range boundary, and no implicit cross-activity mutation tests. |
 | GROUP-01, GROUP-02 | Role-scoped membership lifecycle, multiple memberships, and cross-group role isolation tests. |
 | SHARE-01, DASH-01 | Per-group preference matrix, live permission changes, revoked membership, denied access, and cross-group leakage tests. |
@@ -75,7 +78,7 @@ For each feature implementation, expand the row into objective, user stories, fu
 | MENTOR-01/02, AUDIO-01 | Consent/assignment scope, assessor attribution, revocation, and unauthorized access tests. |
 | GOAL-01, NOTIFY-01, COMMUNITY-01/02, NOTES-01 | Ownership/role checks, privacy-safe delivery/feed behavior, opt-in settings, and boundary tests. |
 | RECOMMEND-01, OFFLINE-01, WHATSAPP-01, AI-01 | Defined algorithm/conflict behavior, opt-in/revocation, privacy handling, and failure/uncertainty tests. |
-| ORG-01 | Organization/group role scoping and proof that organization access does not bypass user sharing. |
+| ORG-01 | Verify optional organization-to-group association does not bypass user sharing; any organization role requires separately approved scope. |
 
 ## Module coverage
 

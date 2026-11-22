@@ -3,9 +3,9 @@
 ## Ownership and access
 
 1. Personal memorization and revision records belong to the individual user, not to a group.
-2. A user may belong to multiple groups; the same personal record may be shared differently with each.
+2. A user may belong to multiple groups; the same personal record may be shown in detailed form to one group and summary form to another.
 3. Sharing is configured independently for each group and is enforced by backend queries and APIs.
-4. Default sharing is privacy-conscious. Exact defaults require product approval. Source categories are overall progress, memorization logs, revision logs, goals, and assessments; sharing an assessment does not automatically grant access to private memorization notes.
+4. Default sharing is privacy-conscious. Exact defaults require product approval. Source categories are overall progress, memorization logs, revision logs, goals, and assessments; sharing an assessment does not automatically grant access to private memorization notes. The five booleans do not yet define summary versus detailed overall-progress visibility; see DEC-023.
 5. Leaving a group revokes future access to the user's group-scoped data.
 
 ## Quran and progress
@@ -22,11 +22,11 @@
 
 ## History and assessment
 
-15. Preserve Sabaq submissions as historical activity separately from one current status per user/Ayah. Repeated submissions do not inflate progress.
+15. Preserve Sabaq submissions as historical activity separately from one current status per user/Ayah. Repeated submissions do not inflate progress. The candidate activity state is SUBMITTED/CANCELLED, but cancellation semantics remain unresolved.
 16. Revision sessions remain separate history and do not change memorization status automatically.
 17. Mentor assessments are independent from learner self-reported status; a learner may be assessed by mentors in different groups. Access is restricted to authorized members of the associated group.
-18. Source assessment results are PASSED or NEEDS_IMPROVEMENT. If an approved rule lets a successful assessment update progress, assessment and status change commit in one transaction.
-19. Group goals are collective targets and do not duplicate personal goals.
+18. Source assessment results are PASSED or NEEDS_IMPROVEMENT. Assessment is a separate record and does not automatically change learner Ayah status. Any future status-transition workflow needs an explicit approved rule; if approved, assessment and status change commit in one transaction.
+19. Group goals are collective targets and do not duplicate personal goals. Their type and completion calculation remain open under DEC-024.
 20. Distinguish group metrics: total unique Ayahs memorized, average individual completion, milestone count, and participation rate.
 21. Group roles and membership changes are authorized and auditable; only ACTIVE memberships grant group access.
 22. Derived analytics and reports must honor the same permissions as source records.

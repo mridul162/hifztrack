@@ -8,7 +8,7 @@ The original specification proposes the following sequence. Phase 0 is documente
 
 | Phase | Deliverable | Main focus |
 |---|---|---|
-| 0 | Development foundation: backend/frontend scaffolding, Compose/PostgreSQL, SQLAlchemy/Alembic, health check, basic UI and environment docs | Local foundation acceptance only; not authorized by this task |
+| 0 | Development foundation: backend/frontend scaffolding, Compose/PostgreSQL, SQLAlchemy/Alembic, health check, basic UI and environment docs | Not started and not authorized by this documentation task |
 | 1 | Authentication and profile | Sessions, privacy and auth tests |
 | 2 | Groups and memberships | Group CRUD, invitation, many-to-many roles/admins |
 | 3 | Quran reference and memorization | Canonical data, submissions, Ayah status and calculations |
@@ -29,8 +29,23 @@ Repository guidance from the source: begin private during development; choose th
 | 3 | Record Quran ranges; calculate progress correctly; derive Juz/page coverage; repeated submissions do not inflate progress. |
 | 4 | Record revision sessions; preserve revision history; keep revision independent of new memorization. |
 | 5 | Configure sharing per group; group APIs do not expose private information; leaving revokes future access. |
-| 6 | Individual progress is accurate; group statistics include only authorized shared data; date-based reports are available. |
+| 6 | Dashboard progress is accurate and group statistics include only authorized shared data (P0). The source also asks for date-based reports in this phase; FR-16 classifies historical reports/analytics as P1, so those reports belong to Release 2 unless the owner approves a scope change. |
 | 7 | Automated tests cover critical services and negative authorization; migrations and Docker deployment work; backups and error monitoring are configured. |
+
+### Phase 0 acceptance checklist (future work only)
+
+Phase 0 remains **NOT_STARTED and NOT AUTHORIZED**. When separately approved, its acceptance requires:
+
+1. Docker Compose starts the application services.
+2. FastAPI starts and its health endpoint responds.
+3. FastAPI connects to PostgreSQL.
+4. Alembic migrations execute successfully.
+5. Next.js starts successfully.
+6. The frontend can communicate with the backend.
+7. Relevant basic tests pass.
+8. README and environment setup instructions are documented.
+
+This checklist records future acceptance criteria only; none of these tasks have been executed.
 
 ## Release 2: accountability and management
 

@@ -7,7 +7,7 @@ Global user identity and group-scoped role are separate. A person may be an admi
 | Learner/member | Read and manage own records | Join/leave groups through approved invitation flow; manage own sharing settings | Read group content and member data only as permitted by each owner and role |
 | Group admin | Same as any learner | Create/manage group and membership subject to policy; multiple admins allowed | Manage group configuration; cannot override another member's private sharing choices |
 | Mentor | Same as any learner | Assigned by an authorized group process | View assigned learner data only within consent and sharing policy; submit optional assessments/feedback |
-| Organization administrator | Same as any learner | Manage organization-scoped groups and delegated roles | Organization administration does not grant automatic access to private learner records |
+| Organization administrator (proposed future role) | Not approved | No organization-level permissions or workflows are defined | Original sources support organization-to-group data-model foundation, but do not define this role or its permissions |
 | Platform admin | Platform operations | Platform-level operations | Original source says manage the entire application; extent of access to private progress and break-glass process remain unresolved |
 
 ## Authorization requirements

@@ -2,7 +2,7 @@
 
 ## Status
 
-Repository currently contains documentation only. Application features: `NOT_STARTED`. No feature is `IMPLEMENTED` or `VERIFIED`.
+Repository currently contains documentation only. Application features: `NOT_STARTED`. No feature is `IMPLEMENTED` or `VERIFIED`. Phase 0 is NOT_STARTED and NOT AUTHORIZED; no application scaffolding, services, dependencies, or Phase 0 acceptance tasks have been started.
 
 Status meanings: `NOT_STARTED` = no implementation; `IN_PROGRESS` = actively being built; `IMPLEMENTED` = code exists, verification pending; `VERIFIED` = acceptance criteria and relevant tests pass.
 
@@ -16,9 +16,9 @@ Reviewed `docs/source/original_specification.md` and `docs/source/original_speci
 |---|---|
 | FR-01/02/05/11 | Covered in requirements and feature catalog. |
 | FR-03/04 | Features present; invitation token behavior captured; group deletion/archival and rejoin details remain partial. |
-| FR-06/07/08/09 | Counts, status vocabulary, session fields, range validation and progress denominator captured; exact dataset/license and status transitions remain open. |
+| FR-06/07/08/09 | Counts, status vocabulary, session fields, range validation and progress denominator captured; exact dataset/license and status transitions remain open. Full-text search is separate extended scope. |
 | FR-10 | Five sharing categories and private/summary default recommendation captured; API actor/ownership ambiguity remains. |
-| FR-12 | P0 dashboard screen content captured; goals/announcements are conditional because they are P1. |
+| FR-12 | P0 dashboard screen content captured; group statistics are limited to current-state/basic summaries. Goals/announcements are conditional because they are P1. |
 | FR-13/14/15 | Corrected to P1/Release 2; target types/units, assessment result model and notification/announcement lifecycle captured; schedule cadence, status effects, delivery preferences remain open. |
 | FR-16/17 | Historical reports/analytics mapped to P1 with distinct group metrics; progress-report export mapped to P2. Exact date windows, export fields and format remain incomplete. |
 | Non-functional requirements | Security, authorization, integrity, auditability, scalability, maintainability, mobile usability and deterministic calculations are explicit. |
@@ -31,9 +31,12 @@ Extended proposals beyond original functional requirements include personal acco
 
 - Source PATCH path targets another member's sharing settings although product intent gives each owner control. Do not grant group-admin override without explicit approval.
 - Source P0 dashboards mention personal goals and announcements although FR-13/FR-15 are P1. The UI docs make those panels conditional; do not imply P1 functionality exists in MVP.
-- `memorization_entries` are called immutable history but also have SUBMITTED/CANCELLED state; cancellation/correction semantics remain open.
+- `memorization_entries` are preserved historical activity but have SUBMITTED/CANCELLED state; cancellation/correction semantics remain open under DEC-005.
 - Membership uniqueness `(group_id,user_id)` plus LEFT status leaves rejoin/history behavior unspecified.
-- Assessments are independent history, while a successful assessment may transactionally update status. Trigger, actor and authority remain unspecified.
+- Assessments are separate records and do not automatically change learner status. Whether an explicit status-transition workflow may ever be permitted remains DEC-019; if approved, it must be transactional.
+- Sharing booleans do not specify how summary and detailed overall-progress views are encoded; DEC-023 keeps the representation open.
+- `group_goals` lacks the `goal_type` available in `user_goals`; type and completion calculations remain open under DEC-024.
+- Full Quran text/advanced search is not in the original P0 reference-navigation requirement; it remains an extended proposal.
 - P2 progress-report export is original. Personal account-data export and exact CSV/PDF details are extended proposals.
 - API, DB, and UX documents remain design baselines, not final implementation contracts.
 

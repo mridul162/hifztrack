@@ -11,15 +11,15 @@ This is a source-reconciled conceptual baseline, not a finalized migration speci
 | organizations | Future institutional container for groups; role scope requires design. |
 | memberships | User-to-group association; role ADMIN/MENTOR/MEMBER, status PENDING/ACTIVE/SUSPENDED/LEFT; unique `(group_id,user_id)` per source; index both FKs; only ACTIVE grants access. Rejoin/history semantics remain open. |
 | group_invitations | Group, random hashed invite code, creator, expiry, optional max uses, used count, active/revoked status. |
-| group_sharing_settings | Unique membership FK; controls overall progress, memorization logs, revision logs, goals, assessments; updated timestamp; private or summary-level default. |
+| group_sharing_settings | Unique membership FK; five controls for overall progress, memorization logs, revision logs, goals, assessments; updated timestamp; privacy-conscious default. How summary versus detailed overall progress maps to these controls is unresolved (DEC-023); no visibility-level schema is selected. |
 | quran_surahs / quran_ayahs | 114 Surahs; stable Quran-wide ID for 6,236 Ayahs, Surah/local Ayah number, Juz and Madani page number; unique `(surah_id,ayah_number)` and validated canonical import. |
 | quran_juz / quran_pages / mappings | Canonical mappings from references to Ayahs; data import provenance required. |
-| memorization_entries | User-owned Sabaq submission: UUID, start/end Ayah IDs, activity date, optional notes/time spent, SUBMITTED/CANCELLED status, created timestamp. Historical activity, not current state. |
+| memorization_entries | User-owned Sabaq submission: UUID, start/end Ayah IDs, activity date, optional notes/time spent, SUBMITTED/CANCELLED status, created timestamp. Preserved historical activity, not current state; cancellation semantics remain DEC-005. |
 | user_ayah_progress | Exactly one current row per `(user_id, ayah_id)` with NOT_STARTED/LEARNING/MEMORIZED/STRONG status and update timestamp. |
 | ayah_progress_events | Recommended later history of status changes, including actor/reason; source says add eventually, so not an MVP requirement unless required for audit policy. |
 | revision_sessions | User-owned range/type (RECENT/OLD/FULL_JUZ/FULL_QURAN), activity date, time spent, optional 1–5 self-rating, notes, created timestamp. |
 | mentor_assignments / assessments | Optional learner/mentor/group assignment; assessment references memorization entry, mentor, group, PASSED/NEEDS_IMPROVEMENT, feedback and assessed timestamp. |
-| user_goals / group_goals | Personal new-memorization/revision target with value, AYAHS/PAGES/JUZ, date range/active flag; collective group target, not duplicated member goals. |
+| user_goals / group_goals | Personal new-memorization/revision target with value, AYAHS/PAGES/JUZ, date range/active flag; collective group target, not duplicated member goals. Candidate `group_goals` lacks the `goal_type` present in `user_goals`; resolve type/completion semantics under DEC-024 before final schema. |
 | personal_notes | Private-by-default Ayah-linked notes. |
 | notifications / announcements / activity | Later communication and engagement records with explicit visibility scope. |
 | audit_events | Sensitive changes and access/role events according to retention policy. |
@@ -32,11 +32,12 @@ Original later-stage entities also include announcements, notifications, mentor 
 - Memorization and revision records reference a user, never a group as owner. Group dashboards query the same central user record through membership and sharing policy; they must not create group-owned copies.
 - Group views join a user's allowed sharing settings and active membership before returning details.
 - Ayah-level progress is the source for derived Surah/Juz/page progress.
-- Revision history does not mutate memorization status implicitly.
+- Revision history does not mutate memorization status.
 - Assessment records identify assessor, learner, referenced activity/range, and timestamp without replacing learner entries.
+- Assessment does not automatically mutate learner status. Any approved future status transition is atomic with its assessment (DEC-019).
 - Each membership carries its own role scope, allowing the same user to have different roles in different groups.
 - Surah/Ayah are canonical reference coordinates. Juz and Mushaf page references are derived through versioned canonical mappings; they are not separate progress stores.
-- Current Ayah state and historical Sabaq events are separate concepts and tables; exact source-of-truth transition/correction behavior remains undecided.
+- Current Ayah state and preserved historical Sabaq activity are separate concepts and tables; cancellation (`SUBMITTED`/`CANCELLED`), correction, and status-history behavior remain under DEC-005.
 - Memorization submission and resulting current-state updates occur in one service-layer transaction. Any approved assessment-triggered progress update is atomic with the assessment.
 - Validate Quran ranges through canonical ordering; numeric ID arithmetic alone is not sufficient validation.
 - Current-state progress is counted per Ayah, not by the number of activity submissions.
@@ -45,4 +46,4 @@ Original later-stage entities also include announcements, notifications, mentor 
 
 ## Open schema decisions
 
-Open schema details include correction/rejoin semantics, date/time and timezone representation, exact Quran dataset/version/license, range representation, sharing configuration and API actor, audit scope, and organization inheritance. The source recommends one current progress row per user/Ayah plus separate immutable activity history; it does not specify the complete status event log or every correction workflow.
+Open schema details include correction/rejoin semantics, date/time and timezone representation, exact Quran dataset/version/license, range representation, sharing visibility representation (DEC-023) and API actor, group goal type/completion (DEC-024), audit scope, and organization inheritance. The source recommends one current progress row per user/Ayah plus separately preserved activity history; it does not specify cancellation semantics or the complete status event log.

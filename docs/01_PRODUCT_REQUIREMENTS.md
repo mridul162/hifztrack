@@ -10,7 +10,7 @@ Requirement IDs below are repository traceability anchors. Original source IDs F
 |---|---|---|
 | PR-AUTH-01 | Users can register, authenticate, log out, and manage profiles/settings. | MVP |
 | PR-GROUP-01 | Users can create groups, join by invitation, hold multiple memberships, and have group-scoped roles. | MVP |
-| PR-QURAN-01 | Quran references resolve canonically by Surah and Ayah, with Juz/page navigation and search. | MVP |
+| PR-QURAN-01 | Quran references resolve canonically by Surah and Ayah, with Juz and Mushaf page navigation. | MVP / P0 |
 | PR-MEM-01 | Users record Sabaq at Ayah/range level; current progress is distinct from preserved historical activity. | MVP |
 | PR-REV-01 | Users record Muraja'ah separately with revision type, notes, and self-assessment. | MVP |
 | PR-SHARE-01 | Users configure sharing independently for each group; backend APIs enforce settings. | MVP |
@@ -42,17 +42,17 @@ Requirement IDs below are repository traceability anchors. Original source IDs F
 | FR-03 | Create, update, delete groups / P0 | GROUP-01 | Partial: delete/archival policy unspecified |
 | FR-04 | Join by invitation / P0 | GROUP-02 | Partial: invitation lifecycle details need acceptance criteria |
 | FR-05 | Multiple group memberships / P0 | GROUP-02 | Complete |
-| FR-06 | Surah, Ayah, Juz, page references / P0 | QURAN-01 | Partial: 114/30/604 Madani page convention and dataset validation need explicit acceptance |
-| FR-07 | Record new memorization / P0 | MEM-01 | Partial: source fields and submission/cancellation state need acceptance criteria |
-| FR-08 | Record revision sessions / P0 | REV-01 | Partial: source revision types and rating range need acceptance criteria |
-| FR-09 | Calculate individual progress / P0 | MEM-01, ANALYTICS-01 | Partial: formulas and 6,236 Ayah denominator need explicit definitions |
-| FR-10 | Custom group sharing / P0 | SHARE-01 | Partial: exact fields are known; API actor/ownership ambiguity remains |
+| FR-06 | Surah, Ayah, Juz, page references / P0 | QURAN-01 | Partial: coverage/navigation criteria recorded; exact Quran dataset, license, and page convention remain open |
+| FR-07 | Record new memorization / P0 | MEM-01 | Partial: source fields and SUBMITTED/CANCELLED state captured; cancellation semantics remain DEC-005 |
+| FR-08 | Record revision sessions / P0 | REV-01 | Covered in feature/schema criteria: revision types, date/time, optional 1-5 rating and notes |
+| FR-09 | Calculate individual progress / P0 | MEM-01, ANALYTICS-01 | Core formula captured from 6,236 Ayahs with MEMORIZED/STRONG separately; reporting windows remain open |
+| FR-10 | Custom group sharing / P0 | SHARE-01 | Five fields documented; summary/detail encoding remains DEC-023 and API actor/ownership DEC-016 |
 | FR-11 | View shared member progress / P0 | DASH-01, SHARE-01 | Complete in principle; all fields remain permission-filtered |
-| FR-12 | Individual and group dashboards / P0 | DASH-01 | Partial: source screen contents are not fully specified in UI requirements |
-| FR-13 | Individual and group targets / P1 | GOAL-01 | Partial: group collective goal semantics and schedules need criteria |
-| FR-14 | Mentor assessment and feedback / P1 | MENTOR-01, MENTOR-02 | Partial: assessment history is separate; effects on status need decision |
-| FR-15 | Notifications and announcements / P1 | NOTIFY-01, COMMUNITY-01 | Partial: delivery/preferences and announcement lifecycle unspecified |
-| FR-16 | Historical reports and analytics / P1 | ANALYTICS-02, REPORT-01 | Partial: source metric definitions need inclusion |
+| FR-12 | Individual and group dashboards / P0 | DASH-01 | Screen contents captured; P0 basic group-summary/P1 analytics boundary remains DEC-018 |
+| FR-13 | Individual and group targets / P1 | GOAL-01 | Target types/units/date fields captured; group goal_type/completion calculation is DEC-024 |
+| FR-14 | Mentor assessment and feedback / P1 | MENTOR-01, MENTOR-02 | Separate assessment/result/access captured; automatic status change prohibited by default, optional explicit workflow remains DEC-019 |
+| FR-15 | Notifications and announcements / P1 | NOTIFY-01, COMMUNITY-01 | Requirements mapped; delivery/preferences and announcement lifecycle remain to define |
+| FR-16 | Historical reports and analytics / P1 | ANALYTICS-02, REPORT-01 | Distinct group metrics captured; period definitions and export content remain to define |
 | FR-17 | Export progress reports / P2 | REPORT-01 | Partial: data scope and formats unspecified; later release |
 
 ### Identity and community
@@ -66,7 +66,8 @@ Requirement IDs below are repository traceability anchors. Original source IDs F
 
 ### Quran and personal practice
 
-- The application provides 114 Surahs, 30 Juz, Ayah-level references, and 604 Madani Mushaf pages under a documented page convention; each Ayah has a stable identifier, and the dataset is validated at import.
+- The application provides Surah selection, Ayah selection/reference lookup, Juz navigation and Mushaf page navigation over 114 Surahs, 30 Juz, 6,236 Ayahs, and 604 Madani pages under a documented convention; each Ayah has a stable identifier and the dataset is validated at import.
+- Full Quran text search and advanced search are extended proposals, not established P0 requirements.
 - A learner has one authoritative personal memorization record across memberships; groups receive permission-filtered views and do not own duplicate progress records.
 - Current Ayah-level progress is distinct from the historical Sabaq activity log. Changes preserve history; exact correction semantics remain unresolved.
 - A learner records revision (Muraja'ah) separately, including revision type, notes, and self-assessment.
@@ -80,7 +81,7 @@ The source proposes `NOT_STARTED`, `LEARNING`, `MEMORIZED`, and `STRONG`. `STRON
 ### Sharing, mentorship, and insight
 
 - Sharing settings are configurable independently for each group.
-- A group dashboard and member views expose only data permitted by the learner's settings and the viewer's role. Overall progress, memorization logs, revision logs, personal goals and assessment information are separate sharing categories.
+- A group dashboard and member views expose only data permitted by the learner's settings and the viewer's role. Overall progress, memorization logs, revision logs, personal goals and assessment information are separate sharing categories. Summary-versus-detailed representation for progress remains DEC-023.
 - Optional mentorship supports assignments, assessments, feedback, and learner monitoring.
 - Historical reports/analytics, notifications, and announcements are original P1 requirements. Activity feeds and challenges are extended proposals.
 

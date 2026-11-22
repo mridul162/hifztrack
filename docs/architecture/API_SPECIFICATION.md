@@ -25,7 +25,7 @@ The original source proposes the following REST paths as an initial contract, re
 | Feature | Candidate operations | Scope rules |
 |---|---|---|
 | AUTH-01 / USER-01 | register, login, logout, current profile, update profile | Own account only; never expose credentials/secrets. |
-| QURAN-01 | list/search Surahs, resolve Ayah, browse Juz/page mappings | Read-only canonical data. |
+| QURAN-01 | list Surahs, resolve Surah/Ayah references, browse Juz/page mappings | Read-only canonical data. Full text/advanced search is an extended proposal, not P0. |
 | MEM-01 | create/list/update memorization entries; read progress | Owner-only for personal detail; preserve history. |
 | REV-01 | create/list revision sessions | Owner-only unless group sharing permits. |
 | GROUP-01 / GROUP-02 | create/update group, invite/join/leave, list members, change roles | Membership and role scoped; administrative actions checked server-side. Join requests are an extended proposal. |

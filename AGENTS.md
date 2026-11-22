@@ -53,7 +53,7 @@ Infrastructure:
 6. Do not implement deferred features prematurely or remove them from the catalog.
 7. Ask before changing documented architectural decisions.
 8. Use database migrations for schema changes.
-9. Never commit secrets or environment files.
+9. Never commit credentials, secret values, or real `.env` files. `.env.example` may be committed only when it contains placeholder values and no credentials.
 
 ## Testing Rules
 
