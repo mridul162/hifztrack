@@ -72,6 +72,13 @@ class MemberUpdate(BaseModel):
     role: str | None = Field(default=None, pattern="^(ADMIN|MENTOR|MEMBER)$")
     state: str | None = Field(default=None, pattern="^(ACTIVE|SUSPENDED|LEFT)$")
 
+    @field_validator("role", "state", mode="before")
+    @classmethod
+    def reject_explicit_null(cls, value: str | None) -> str | None:
+        if value is None:
+            raise ValueError("Explicit null is not allowed")
+        return value
+
 
 class InvitationCreate(BaseModel):
     expires_in_days: int = Field(default=7, ge=1, le=30)

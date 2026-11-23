@@ -63,6 +63,12 @@ def test_invitation_is_digest_only_and_join_leave_rejoin_preserves_episode(clien
     invitation = client.post(f"/groups/{group['id']}/invitations", headers=csrf_headers, json={})
     assert invitation.status_code == 201
     token = invitation.json()["token"]
+    assert invitation.json()["max_uses"] == 1
+    expires_at = datetime.fromisoformat(invitation.json()["expires_at"])
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    remaining = expires_at - datetime.now(timezone.utc)
+    assert timedelta(days=6, hours=23) < remaining <= timedelta(days=7)
     listed = client.get(f"/groups/{group['id']}/invitations")
     assert listed.status_code == 200
     assert token not in listed.text
@@ -169,6 +175,128 @@ def test_group_mutations_require_csrf(client):
 
 def test_group_reads_require_authentication(client):
     assert client.get("/groups").status_code == 401
+
+
+def test_member_update_rejects_explicit_null_and_accepts_valid_partial_updates(client, csrf_headers):
+    register(client, csrf_headers, "null-owner@example.com", "Owner")
+    group = client.post("/groups", headers=csrf_headers, json={"name": "Null validation"}).json()
+    token = client.post(f"/groups/{group['id']}/invitations", headers=csrf_headers, json={}).json()["token"]
+    client.post("/auth/logout", headers=csrf_headers)
+    register(client, csrf_headers, "null-member@example.com", "Member")
+    member = client.post("/invitations/accept", headers=csrf_headers, json={"token": token}).json()
+    client.post("/auth/logout", headers=csrf_headers)
+    client.post("/auth/login", headers=csrf_headers, json={"email": "null-owner@example.com", "password": "correct-horse-battery"})
+    url = f"/groups/{group['id']}/members/{member['id']}"
+    for payload in ({"role": None}, {"state": None}, {"role": None, "state": "ACTIVE"}, {}):
+        assert client.patch(url, headers=csrf_headers, json=payload).status_code == 422
+    role_only = client.patch(url, headers=csrf_headers, json={"role": "MENTOR"})
+    assert role_only.status_code == 200
+    assert role_only.json()["role"] == "MENTOR" and role_only.json()["state"] == "ACTIVE"
+    state_only = client.patch(url, headers=csrf_headers, json={"state": "SUSPENDED"})
+    assert state_only.status_code == 200
+    assert state_only.json()["state"] == "SUSPENDED" and state_only.json()["role"] == "MENTOR"
+
+
+def test_acceptance_rechecks_expiry_with_fresh_time_after_locks(client, csrf_headers, monkeypatch):
+    from app.db.session import get_db
+    from app.groups import service
+    from app.main import app
+    from app.models import User
+    from fastapi import HTTPException
+
+    register(client, csrf_headers, "fresh-time-owner@example.com", "Owner")
+    group = client.post("/groups", headers=csrf_headers, json={"name": "Fresh time"}).json()
+    token = client.post(f"/groups/{group['id']}/invitations", headers=csrf_headers, json={}).json()["token"]
+    client.post("/auth/logout", headers=csrf_headers)
+    register(client, csrf_headers, "fresh-time-member@example.com", "Member")
+    generator = app.dependency_overrides[get_db]()
+    db = next(generator)
+    initial = datetime(2030, 1, 1, tzinfo=timezone.utc)
+    try:
+        invite = db.query(GroupInvitation).one()
+        invite.expires_at = initial + timedelta(seconds=1)
+        db.commit()
+        user = db.query(User).filter_by(email="fresh-time-member@example.com").one()
+        times = iter((initial, initial + timedelta(seconds=2)))
+        monkeypatch.setattr(service, "utcnow", lambda: next(times))
+        try:
+            service.accept_invitation(db, token, user)
+            raise AssertionError("expired-after-lock invitation was accepted")
+        except HTTPException as error:
+            assert error.status_code == 400
+        db.refresh(invite)
+        assert invite.used_count == 0
+        assert db.query(GroupMembership).filter_by(group_id=UUID(group["id"]), user_id=user.id).count() == 0
+    finally:
+        db.close()
+
+
+def test_archived_group_remains_readable_and_member_can_leave(client, csrf_headers):
+    register(client, csrf_headers, "archive-owner@example.com", "Owner")
+    group = client.post("/groups", headers=csrf_headers, json={"name": "Archived read"}).json()
+    token = client.post(f"/groups/{group['id']}/invitations", headers=csrf_headers, json={}).json()["token"]
+    client.post("/auth/logout", headers=csrf_headers)
+    register(client, csrf_headers, "archive-member@example.com", "Member")
+    assert client.post("/invitations/accept", headers=csrf_headers, json={"token": token}).status_code == 201
+    client.post("/auth/logout", headers=csrf_headers)
+    client.post("/auth/login", headers=csrf_headers, json={"email": "archive-owner@example.com", "password": "correct-horse-battery"})
+    assert client.post(f"/groups/{group['id']}/archive", headers=csrf_headers).status_code == 200
+    assert client.patch(f"/groups/{group['id']}", headers=csrf_headers,
+        json={"name": "No changes"}).status_code == 409
+    client.post("/auth/logout", headers=csrf_headers)
+    client.post("/auth/login", headers=csrf_headers, json={"email": "archive-member@example.com", "password": "correct-horse-battery"})
+    assert client.get(f"/groups/{group['id']}").status_code == 200
+    assert client.post(f"/groups/{group['id']}/leave", headers=csrf_headers).json()["state"] == "LEFT"
+
+
+def test_losing_admin_role_revokes_invitations_created_by_that_admin(client, csrf_headers):
+    from app.db.session import get_db
+    from app.main import app
+    register(client, csrf_headers, "demote-owner@example.com", "Owner")
+    group = client.post("/groups", headers=csrf_headers, json={"name": "Demote admin"}).json()
+    member_token = client.post(f"/groups/{group['id']}/invitations", headers=csrf_headers, json={}).json()["token"]
+    client.post("/auth/logout", headers=csrf_headers)
+    register(client, csrf_headers, "demote-member@example.com", "Second Admin")
+    member = client.post("/invitations/accept", headers=csrf_headers, json={"token": member_token}).json()
+    client.post("/auth/logout", headers=csrf_headers)
+    client.post("/auth/login", headers=csrf_headers, json={"email": "demote-owner@example.com", "password": "correct-horse-battery"})
+    assert client.patch(f"/groups/{group['id']}/members/{member['id']}", headers=csrf_headers,
+        json={"role": "ADMIN"}).status_code == 200
+    owner_id = client.get("/users/me").json()["id"]
+    pending_token = client.post(f"/groups/{group['id']}/invitations", headers=csrf_headers, json={}).json()["token"]
+    client.post("/auth/logout", headers=csrf_headers)
+    client.post("/auth/login", headers=csrf_headers, json={"email": "demote-member@example.com", "password": "correct-horse-battery"})
+    assert client.patch(f"/groups/{group['id']}/members/{group['my_membership_id']}", headers=csrf_headers,
+        json={"role": "MEMBER"}).status_code == 200
+    client.post("/auth/logout", headers=csrf_headers)
+    register(client, csrf_headers, "demote-invitee@example.com", "Invitee")
+    assert client.post("/invitations/accept", headers=csrf_headers,
+        json={"token": pending_token}).status_code == 400
+    generator = app.dependency_overrides[get_db]()
+    db = next(generator)
+    try:
+        invitation = db.query(GroupInvitation).filter_by(group_id=UUID(group["id"]),
+            created_by=UUID(owner_id)).order_by(GroupInvitation.created_at.desc()).first()
+        assert invitation is not None and invitation.revoked_at is not None
+    finally:
+        db.close()
+
+
+def test_admin_leave_revokes_that_admins_invitations(client, csrf_headers):
+    register(client, csrf_headers, "leave-admin@example.com", "Owner")
+    group = client.post("/groups", headers=csrf_headers, json={"name": "Admin leave"}).json()
+    first_token = client.post(f"/groups/{group['id']}/invitations", headers=csrf_headers, json={}).json()["token"]
+    client.post("/auth/logout", headers=csrf_headers)
+    register(client, csrf_headers, "leave-second-admin@example.com", "Second")
+    invited = client.post("/invitations/accept", headers=csrf_headers, json={"token": first_token}).json()
+    client.post("/auth/logout", headers=csrf_headers)
+    client.post("/auth/login", headers=csrf_headers, json={"email": "leave-admin@example.com", "password": "correct-horse-battery"})
+    assert client.patch(f"/groups/{group['id']}/members/{invited['id']}", headers=csrf_headers,
+        json={"role": "ADMIN"}).status_code == 200
+    pending_token = client.post(f"/groups/{group['id']}/invitations", headers=csrf_headers, json={}).json()["token"]
+    assert client.post(f"/groups/{group['id']}/leave", headers=csrf_headers).json()["state"] == "LEFT"
+    assert client.post("/invitations/accept", headers=csrf_headers,
+        json={"token": pending_token}).status_code == 400
 
 
 def test_invitation_creation_rate_limits_user_scope(client, csrf_headers):

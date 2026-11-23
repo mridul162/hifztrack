@@ -17,7 +17,7 @@ The original specification proposes the following sequence. F0-A is an owner-app
 | 6 | Mentor and dashboards | Optional assessment, personal/group dashboards and basic analytics |
 | 7 | Production readiness | CI/CD, logging, backups, deployment and security review |
 
-GROUP-01 and GROUP-02 are IMPLEMENTED in the working tree; milestone verification remains pending until PostgreSQL migration upgrade/downgrade and concurrency checks pass.
+GROUP-01 and GROUP-02 are VERIFIED. PostgreSQL migration upgrade/downgrade, schema inspection, rate-limit boundaries, and concurrency coverage are recorded in the implementation status.
 
 Detailed milestone acceptance criteria from the source are retained in the feature catalog and corresponding requirements. Before any phase begins, the owner approves scope, review gates, and open decisions. Git guidance from the source is to use GitHub, keep `main` as default and `develop` as integration branch, use feature branches for work, inspect diffs, and commit only after verification; do not auto-commit or merge.
 

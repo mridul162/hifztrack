@@ -12,6 +12,10 @@ from app.core.config import settings
 from app.models import Group, GroupInvitation, GroupMembership, GroupMembershipEvent, User
 
 
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 def token_digest(token: str) -> str:
     secret = settings.security_secret_key.get_secret_value().encode()
     return hmac.new(secret, b"group-invite-v1\0" + token.encode(), hashlib.sha256).hexdigest()
@@ -73,11 +77,13 @@ def _as_utc(value: datetime) -> datetime:
 def accept_invitation(db: Session, token: str, user: User) -> GroupMembership:
     digest = token_digest(token)
     invite = db.scalar(select(GroupInvitation).where(GroupInvitation.token_digest == digest))
-    now = datetime.now(timezone.utc)
-    if not invite or invite.revoked_at or _as_utc(invite.expires_at) <= now:
+    initial_now = utcnow()
+    if not invite or invite.revoked_at or _as_utc(invite.expires_at) <= initial_now:
         raise HTTPException(400, "Invitation is invalid or unavailable")
     group = group_for_update(db, invite.group_id)
-    invite = db.scalar(select(GroupInvitation).where(GroupInvitation.id == invite.id).with_for_update())
+    invite = db.scalar(select(GroupInvitation).where(GroupInvitation.id == invite.id)
+        .with_for_update().execution_options(populate_existing=True))
+    now = utcnow()
     if not invite or invite.revoked_at or _as_utc(invite.expires_at) <= now:
         raise HTTPException(400, "Invitation is invalid or unavailable")
     if group.lifecycle != "ACTIVE" or (invite.max_uses is not None and invite.used_count >= invite.max_uses):

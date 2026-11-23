@@ -1,6 +1,6 @@
 # Feature catalog
 
-Status convention: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `VERIFIED`. AUTH-01 and USER-01 are `VERIFIED`; GROUP-01 and GROUP-02 are `IMPLEMENTED` pending verification; other feature statuses remain as listed. Original source priorities map to P0=MVP, P1=next functional release, P2=later enhancement. Features carried forward from the earlier initialization brief but absent as requirements in both originals are marked “Extended proposal.” Rows include dependencies and minimum acceptance criteria; required tests should include positive behavior, validation, and negative authorization cases where data access is involved.
+Status convention: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `VERIFIED`. AUTH-01, USER-01, GROUP-01, and GROUP-02 are `VERIFIED`; other feature statuses remain as listed. Original source priorities map to P0=MVP, P1=next functional release, P2=later enhancement. Features carried forward from the earlier initialization brief but absent as requirements in both originals are marked “Extended proposal.” Rows include dependencies and minimum acceptance criteria; required tests should include positive behavior, validation, and negative authorization cases where data access is involved.
 
 | ID | Feature | Priority / release | Dependencies | Minimum acceptance criteria |
 |---|---|---|---|---|
@@ -47,7 +47,7 @@ For each feature implementation, expand the row into objective, user stories, fu
 | QURAN-SEARCH-01 | No original P0 requirement; extended proposal | TBD | NOT_STARTED |
 | MEM-01 | PR-MEM-01, PR-HIST-01, PR-SEC-01 | P0 | NOT_STARTED |
 | REV-01 | PR-REV-01, PR-HIST-01 | P0 | NOT_STARTED |
-| GROUP-01, GROUP-02 | PR-GROUP-01 | P0 | IMPLEMENTED (verification pending; see implementation status) |
+| GROUP-01, GROUP-02 | PR-GROUP-01 | P0 | VERIFIED (see implementation status) |
 | SHARE-01 | PR-SHARE-01, PR-SEC-01 | P0 | NOT_STARTED |
 | DASH-01 | PR-DASH-01, PR-SEC-01 | P0 | NOT_STARTED |
 | ANALYTICS-01 | PR-ANALYTICS-01 | P0 | NOT_STARTED |
