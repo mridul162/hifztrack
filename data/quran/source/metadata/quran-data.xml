@@ -1,4 +1,4 @@
-<quran type="metadata" version="1.0" copyright="(C) 2008-2009 Tanzil.info" license="cc-by">
+<quran type="metadata" version="1.0" copyright="(C) 2008-2009 Tanzil.info" license="cc-by-3.0" xmlns="https://tanzil.net/docs/Quran_Metadata">
 <suras alias="chapters">
 <sura index="1" ayas="7" start="0" name="الفاتحة" tname="Al-Faatiha" ename="The Opening" type="Meccan" order="5" rukus="1"/>
 <sura index="2" ayas="286" start="7" name="البقرة" tname="Al-Baqara" ename="The Cow" type="Medinan" order="87" rukus="40"/>

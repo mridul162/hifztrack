@@ -57,6 +57,17 @@ def parse_document(data: bytes) -> tuple[ET.Element | None, str | None]:
         return None, str(exc)
 
 
+def xml_local_name(tag: str) -> str:
+    """Return an XML tag's local name, whether or not it has a namespace."""
+    return tag.rsplit("}", 1)[-1]
+
+
+def metadata_sections(root: ET.Element | None) -> dict[str, list[ET.Element]]:
+    if root is None:
+        return {}
+    return {xml_local_name(child.tag): list(child) for child in root}
+
+
 def comment_blocks(text: str) -> list[str]:
     return re.findall(r"<!--.*?-->", text, flags=re.DOTALL)
 
@@ -239,7 +250,7 @@ def main() -> None:
     originals_unchanged = hashes_before == hashes_after
 
     # Metadata boundary consistency summary.
-    meta_sections = {child.tag: list(child) for child in list(metadata_root) if metadata_root is not None} # type: ignore
+    meta_sections = metadata_sections(metadata_root)
     metadata_issues = []
     sura_meta = meta_sections.get("suras", [])
     if len(sura_meta) != 114:
@@ -289,7 +300,7 @@ def main() -> None:
         f"- Metadata: {'PASS' if metadata_error is None and not metadata_issues else 'FAIL'} — 114 Surah records, {len(meta_sections.get('juzs', []))} Juz markers, {len(meta_sections.get('pages', []))} page markers.",
         f"- Original translation files: {sum(x['xml_error'] is None for x in source_checks)}/3 strictly parse; record checks after comment omission are diagnostic only.",
         f"- Derivatives: {sum(x is not None and status(x) for x in derived_checks)}/3 pass strict XML, canonical coverage, ordering, and nonempty-text checks.",
-        "- Licensing remains unresolved for metadata and translations; XML repair is not licensing approval.", "",
+        "- Metadata declares `cc-by-3.0`; translation use remains subject to Tanzil's published terms. Structural validation does not establish source provenance or grant rights.", "",
         "## Source Parse Failures and Comment Inspection", "",
         "Each original translation fails strict parsing at line 4, column 4 (`not well-formed (invalid token)`). Inspection found exactly one metadata comment per file. Each of its two decorative separators is a 68-hyphen run, containing 67 overlapping adjacent `--` sequences (34 non-overlapping pairs); there are 134 adjacent occurrences per file. No other invalid XML comment patterns were found. Removing the comment in memory allows the remainder of each document to parse as `<quran>` with 114 Surahs and 6,236 Ayahs, establishing that the observed parse failure is confined to comment syntax.", "",
         "The comments contain useful translation metadata (translation name, translator, language, dataset ID, last-update date, and Tanzil.net source). They were retained in the derivatives.", "",
@@ -323,8 +334,8 @@ def main() -> None:
         f"- Metadata structural findings: {metadata_issues or 'none'}.", "",
         "## Licensing and Provenance Limitations", "",
         "- Arabic source notice identifies Tanzil Quran Text, Uthmani Version 1.1, Copyright © 2007–2026 Tanzil Project, CC BY 3.0. It requires source indication and a tanzil.net link, preservation of the notice, and says the text may not be changed. This repair does not touch Arabic text.",
-        "- Metadata identifies `(C) 2008-2009 Tanzil.info`, version 1.0, and `license=cc-by`, but supplies no license version, URL, or full terms.",
-        "- Translation comments identify Tanzil.net and each translator, but do not state copyright holder/license, license URL, attribution terms, or redistribution/modification permission. Do not infer translation rights from the Arabic text license.",
+        "- Metadata identifies `(C) 2008-2009 Tanzil.info`, version 1.0, and declares `license=cc-by-3.0`; Tanzil's metadata documentation page describes the data but does not state separate terms. The repository does not record provenance for the recent license-attribute edit.",
+        "- Translation comments identify Tanzil.net and each translator. Tanzil's translation page states non-commercial use, requires a link back when using more than three translations, and separately restricts redistribution of its translation list. Do not infer translation terms from the Arabic text license.",
         "- No source download URL is recorded. XML repair does not grant or confirm redistribution permission.", "",
         "## Reproduction", "",
         "From the repository root, run `python data/quran/validation/validate_datasets.py` to validate original and derivative files independently and refresh this report. To recreate the derivatives using comment-only fixes, run `python data/quran/validation/validate_datasets.py --repair-derivatives`. The script uses only the Python standard library and never writes source XML files.", "",
