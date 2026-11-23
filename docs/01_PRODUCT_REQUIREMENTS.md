@@ -42,8 +42,8 @@ Requirement IDs below are repository traceability anchors. Original source IDs F
 | FR-03 | Create, update, delete groups / P0 | GROUP-01 | Partial: delete/archival policy unspecified |
 | FR-04 | Join by invitation / P0 | GROUP-02 | Partial: invitation lifecycle details need acceptance criteria |
 | FR-05 | Multiple group memberships / P0 | GROUP-02 | Complete |
-| FR-06 | Surah, Ayah, Juz, page references / P0 | QURAN-01 | Partial: coverage/navigation criteria recorded; exact Quran dataset, license, and page convention remain open |
-| FR-07 | Record new memorization / P0 | MEM-01 | Partial: source fields and SUBMITTED/CANCELLED state captured; cancellation semantics remain DEC-005 |
+| FR-06 | Surah, Ayah, Juz, page references / P0 | QURAN-01 | Direction conditionally approved under DEC-002; Arabic provenance/notice, metadata-license basis, and independent page-boundary verification remain gates |
+| FR-07 | Record new memorization / P0 | MEM-01 | Business rules approved under DEC-004/005: learner-controlled status and separately preserved Sabaq submissions/cancellations/corrections |
 | FR-08 | Record revision sessions / P0 | REV-01 | Covered in feature/schema criteria: revision types, date/time, optional 1-5 rating and notes |
 | FR-09 | Calculate individual progress / P0 | MEM-01, ANALYTICS-01 | Core formula captured from 6,236 Ayahs with MEMORIZED/STRONG separately; reporting windows remain open |
 | FR-10 | Custom group sharing / P0 | SHARE-01 | Five fields documented; summary/detail encoding remains DEC-023 and API actor/ownership DEC-016 |
@@ -69,14 +69,14 @@ Requirement IDs below are repository traceability anchors. Original source IDs F
 - The application provides Surah selection, Ayah selection/reference lookup, Juz navigation and Mushaf page navigation over 114 Surahs, 30 Juz, 6,236 Ayahs, and 604 Madani pages under a documented convention; each Ayah has a stable identifier and the dataset is validated at import.
 - Full Quran text search and advanced search are extended proposals, not established P0 requirements.
 - A learner has one authoritative personal memorization record across memberships; groups receive permission-filtered views and do not own duplicate progress records.
-- Current Ayah-level progress is distinct from the historical Sabaq activity log. Changes preserve history; exact correction semantics remain unresolved.
+- Current Ayah-level progress is distinct from the historical Sabaq activity log. Preserve each submission; correct an error by cancelling it and recording a replacement. Neither cancellation nor correction changes current Ayah status (DEC-005).
 - A learner records revision (Muraja'ah) separately, including revision type, notes, and self-assessment.
 - Surah/Ayah are canonical references. Juz and Mushaf page context/progress are derived from canonical Quran mappings rather than duplicated as independent progress truth.
 - Original FR-13 requires personal and group targets; schedules are an extended proposal. Notes, advanced recommendations and audio details are not original functional requirements.
 
 ## Memorization status model
 
-The source proposes `NOT_STARTED`, `LEARNING`, `MEMORIZED`, and `STRONG`. `STRONG` requires explicit assessment or a defined verification rule; it must not result merely from self-marking a portion memorized. A portion can regress from `STRONG` to `MEMORIZED` or `LEARNING`. Exact transitions and the effect of mentor assessment remain open in [the decision register](roadmap/OPEN_DECISIONS.md).
+The approved statuses are `NOT_STARTED`, `LEARNING`, `MEMORIZED`, and `STRONG`. Learners manually control their status per Ayah and may move between any defined statuses, including regression. `STRONG` requires explicit learner confirmation. Sabaq submissions, mentor assessments, and revision activity do not automatically change status (DEC-004; ADR-015).
 
 ### Sharing, mentorship, and insight
 
@@ -93,7 +93,7 @@ The source proposes `NOT_STARTED`, `LEARNING`, `MEMORIZED`, and `STRONG`. `STRON
 ## Quality requirements
 
 - Enforce authentication and authorization on the server for every protected operation.
-- Preserve activity history; corrections should be traceable rather than erasing history without policy.
+- Preserve Sabaq history; cancel an incorrect submission and create a corrected replacement without changing current Ayah status (DEC-005; ADR-016).
 - Apply group-specific privacy on every group-facing query and response.
 - Keep calculations deterministic and testable.
 - Use migrations for schema changes and validate inputs at API boundaries.

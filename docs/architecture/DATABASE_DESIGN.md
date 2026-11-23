@@ -1,6 +1,6 @@
 # Database design
 
-This documents the implemented baseline and remaining conceptual entities. The project uses PostgreSQL, SQLAlchemy 2.0, UUID primary keys, and Alembic migrations. AUTH-01 is in migration `0002_auth`; GROUP-01/GROUP-02 schema is in `0003_groups`. Quran dataset/license decisions remain required before Quran reference integration.
+This documents the implemented baseline and remaining conceptual entities. The project uses PostgreSQL, SQLAlchemy 2.0, UUID primary keys, and Alembic migrations. AUTH-01 is in migration `0002_auth`; GROUP-01/GROUP-02 schema is in `0003_groups`. DEC-002 conditionally approves the Quran source/convention; its provenance, notice, metadata-license, and page-boundary verification gates remain required before Quran reference integration.
 
 ## Candidate entities
 
@@ -18,7 +18,7 @@ This documents the implemented baseline and remaining conceptual entities. The p
 | group_sharing_settings | Unique membership FK; five controls for overall progress, memorization logs, revision logs, goals, assessments; updated timestamp; privacy-conscious default. How summary versus detailed overall progress maps to these controls is unresolved (DEC-023); no visibility-level schema is selected. |
 | quran_surahs / quran_ayahs | 114 Surahs; stable Quran-wide ID for 6,236 Ayahs, Surah/local Ayah number, Juz and Madani page number; unique `(surah_id,ayah_number)` and validated canonical import. |
 | quran_juz / quran_pages / mappings | Canonical mappings from references to Ayahs; data import provenance required. |
-| memorization_entries | User-owned Sabaq submission: UUID, start/end Ayah IDs, activity date, optional notes/time spent, SUBMITTED/CANCELLED status, created timestamp. Preserved historical activity, not current state; cancellation semantics remain DEC-005. |
+| memorization_entries | User-owned Sabaq submission: UUID, start/end Ayah IDs, activity date, optional notes/time spent, SUBMITTED/CANCELLED status, created timestamp. Every submission is preserved as history; corrections cancel the incorrect entry and add a corrected one without changing current Ayah status (DEC-005 / ADR-016). |
 | user_ayah_progress | Exactly one current row per `(user_id, ayah_id)` with NOT_STARTED/LEARNING/MEMORIZED/STRONG status and update timestamp. |
 | ayah_progress_events | Recommended later history of status changes, including actor/reason; source says add eventually, so not an MVP requirement unless required for audit policy. |
 | revision_sessions | User-owned range/type (RECENT/OLD/FULL_JUZ/FULL_QURAN), activity date, time spent, optional 1–5 self-rating, notes, created timestamp. |
@@ -41,7 +41,7 @@ Original later-stage entities also include announcements, notifications, mentor 
 - Assessment does not automatically mutate learner status. Any approved future status transition is atomic with its assessment (DEC-019).
 - Each membership episode carries one role, allowing the same user to have different roles in different groups. Multiple admins and mentors per group are allowed.
 - Surah/Ayah are canonical reference coordinates. Juz and Mushaf page references are derived through versioned canonical mappings; they are not separate progress stores.
-- Current Ayah state and preserved historical Sabaq activity are separate concepts and tables; cancellation (`SUBMITTED`/`CANCELLED`), correction, and status-history behavior remain under DEC-005.
+- Current Ayah state and preserved historical Sabaq activity are separate concepts and tables. Cancellation/correction rules are defined by DEC-005 / ADR-016; status changes are explicit learner actions defined by DEC-004 / ADR-015.
 - Memorization submission and resulting current-state updates occur in one service-layer transaction. Any approved assessment-triggered progress update is atomic with the assessment.
 - Validate Quran ranges through canonical ordering; numeric ID arithmetic alone is not sufficient validation.
 - Current-state progress is counted per Ayah, not by the number of activity submissions.

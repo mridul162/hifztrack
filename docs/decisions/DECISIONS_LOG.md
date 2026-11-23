@@ -8,7 +8,7 @@ Record approved decisions with ID, date, context, decision, consequences, and st
 
 ## ADR-002: Personal progress ownership
 
-**Status:** Accepted. **Decision:** Each user owns one central personal memorization record. Current Ayah status is represented once per `(user, Ayah)`; Sabaq history is stored separately. Groups receive permission-filtered views of the same record and never own duplicate progress copies. **Reason:** A user can belong to multiple groups and share different views with each. Correction, cancellation, and status-history semantics remain open under DEC-005.
+**Status:** Accepted. **Decision:** Each user owns one central personal memorization record. Current Ayah status is represented once per `(user, Ayah)`; Sabaq history is stored separately. Groups receive permission-filtered views of the same record and never own duplicate progress copies. **Reason:** A user can belong to multiple groups and share different views with each. Status transitions are defined in ADR-015; Sabaq cancellation/correction semantics are defined in ADR-016.
 
 ## ADR-003: Group-specific sharing
 
@@ -53,3 +53,35 @@ Record approved decisions with ID, date, context, decision, consequences, and st
 ## ADR-013: Root-level API route convention
 
 **Date:** 2026-11-23. **Status:** Approved implementation convention for Phase 2. **Decision:** Continue the existing AUTH-01 root-level route convention. `/api/v1` versioning remains a future architecture decision; no route retrofit is part of GROUP-01/GROUP-02.
+
+## ADR-014: Canonical Quran dataset and Mushaf convention (DEC-002)
+
+**Date:** 2026-11-23. **Status:** Conditionally approved; verification gates remain open.
+
+**Context:** QURAN-01 requires a canonical Quran reference, stable Surah/Ayah coordinates, and derived Juz/page navigation. The repository contains Tanzil Quran Text Uthmani v1.1 and Tanzil metadata, but local provenance, metadata-license evidence, and independent verification of page boundaries are incomplete.
+
+**Approved decision:** Use Tanzil Quran Text Uthmani v1.1 in Uthmani script, with the Madani Mushaf and 604-page convention. Canonical Ayah identity is `(surah_number, ayah_number)`; Juz and page references are derived. Exclude translations from the initial release and preserve the Arabic source text verbatim. Defer additional Mushaf editions.
+
+**Consequences:** QURAN-01 may use this direction only after the applicable evidence gates below are satisfied. Translation files remain outside initial-release import, API, and distribution scope and require a separate licensing decision.
+
+**Outstanding conditions before import/use:** Establish provenance of the local Arabic file and preserve the applicable Tanzil notice; resolve the notice discrepancy from authoritative evidence; establish the provenance and licensing basis for metadata's `cc-by-3.0` declaration and record attribution/redistribution requirements; identify the exact authoritative Madani edition and independently verify all 604 page boundaries, recording source, method, discrepancies, and result.
+
+## ADR-015: Ayah status transitions (DEC-004)
+
+**Date:** 2026-11-23. **Status:** Resolved / approved.
+
+**Context:** Current progress needs an explicit status model and transition rule that does not infer learner state from activity or assessment.
+
+**Approved decision:** Per `(user, Ayah)`, statuses are NOT_STARTED (memorization has not started), LEARNING (currently being learned), MEMORIZED (learner considers it memorized), and STRONG (learner explicitly considers it strongly retained). The learner manually controls transitions among these statuses; regression is permitted. STRONG requires explicit learner confirmation. Sabaq submissions, mentor assessments, and revision activity do not automatically change current status.
+
+**Consequences:** Current status is independent of activity counts and mentor/revision events. No automatic STRONG promotion or assessment-driven transition is allowed.
+
+## ADR-016: Sabaq submission history and corrections (DEC-005)
+
+**Date:** 2026-11-23. **Status:** Resolved / approved.
+
+**Context:** Sabaq activity must remain auditable without becoming a competing source of current Ayah progress.
+
+**Approved decision:** Each Sabaq submission creates a historical record. Repeated and overlapping submissions remain separate records and never create duplicate current progress rows or inflate unique Ayah counts. Cancellation preserves the record and changes its activity state from SUBMITTED to CANCELLED. A correction cancels the incorrect submission and creates a new submission with corrected information. Cancellation and correction do not change current Ayah status; only an explicit learner status update under ADR-015 changes it. Current status and Sabaq history remain independently queryable.
+
+**Consequences:** Never derive current status from the latest Sabaq submission or automatically reverse progress after cancellation. Personal progress remains centrally user-owned as established by ADR-002.

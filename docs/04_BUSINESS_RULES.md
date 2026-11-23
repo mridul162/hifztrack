@@ -18,11 +18,11 @@
 11. The reference dataset covers 114 Surahs, 30 Juz, 6,236 Ayahs, and 604 Madani Mushaf pages under a documented convention. Each Ayah has a stable identifier and the dataset is validated at import.
 12. Validate ranges against canonical Quran order; ranges may cross Surah boundaries, and numeric IDs alone must not substitute for location validation.
 13. Current progress comes from `user_ayah_progress`, not activity counts. MEMORIZED and STRONG coverage may be reported separately using the 6,236 Ayah denominator.
-14. The established Ayah statuses are NOT_STARTED, LEARNING, MEMORIZED, and STRONG. Allowed transitions, regression criteria, and STRONG verification rules remain unresolved under DEC-004.
+14. The Ayah statuses are NOT_STARTED (memorization has not started), LEARNING (currently being learned), MEMORIZED (learner considers the Ayah memorized), and STRONG (learner explicitly considers it strongly retained). The learner manually controls status per `(user, Ayah)` and may move between any defined statuses, including regression. STRONG requires explicit learner confirmation. Submission counts, mentor assessments, and revision activity do not automatically change status (DEC-004; ADR-015).
 
 ## History and assessment
 
-15. Preserve Sabaq submissions as historical activity separately from one current status per user/Ayah. Repeated submissions do not inflate progress. The candidate activity state is SUBMITTED/CANCELLED, but cancellation semantics remain unresolved.
+15. Preserve every Sabaq submission as historical activity separately from one current status per user/Ayah. Repeated and overlapping submissions remain separate history and do not inflate unique Ayah progress. Cancellation changes SUBMITTED to CANCELLED without deleting history. Correct an erroneous submission by cancelling it and creating a corrected submission. Cancellation/correction does not change current Ayah status; current status and Sabaq history remain independently queryable (DEC-005; ADR-016).
 16. Revision sessions remain separate history and do not change memorization status automatically.
 17. Mentor assessments are independent from learner self-reported status; a learner may be assessed by mentors in different groups. Access is restricted to authorized members of the associated group.
 18. Source assessment results are PASSED or NEEDS_IMPROVEMENT. Assessment is a separate record and does not automatically change learner Ayah status. Any future status-transition workflow needs an explicit approved rule; if approved, assessment and status change commit in one transaction.
@@ -48,4 +48,4 @@ The canonical source invitation and membership rules above replace the earlier u
 
 ## Remaining unresolved policy details
 
-The canonical Quran dataset/license, Ayah status transitions and verification criteria (DEC-004), overlap/correction semantics, sharing field matrix/defaults, deletion/export behavior, mentor consent and assessment vocabulary, timezone boundaries, and broader audit retention need decisions before affected features are implemented.
+DEC-002 remains conditionally approved; Arabic provenance/notice, metadata-license basis, and independent verification of all Madani page boundaries remain gates before Quran data import/use. Other unresolved details include the sharing field matrix/defaults, deletion/export behavior, mentor consent and assessment vocabulary, timezone boundaries, and broader audit retention.
