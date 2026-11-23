@@ -22,6 +22,8 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://hifztrack:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/hifztrack
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      SECURITY_SECRET_KEY: ${SECURITY_SECRET_KEY:?Set SECURITY_SECRET_KEY in .env}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
     ports:
       - "8000:8000"
     volumes:

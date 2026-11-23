@@ -1,12 +1,14 @@
 # Database design
 
-This is a source-reconciled conceptual baseline, not a finalized migration specification. The original recommends PostgreSQL, SQLAlchemy 2.0, UUID primary keys and a normalized relational schema. Exact migration DDL, indexes/constraints beyond those listed, deletion policy, and Quran dataset/license must be reviewed before migrations.
+This is a source-reconciled conceptual baseline, not a finalized migration specification. The original recommends PostgreSQL, SQLAlchemy 2.0, UUID primary keys and a normalized relational schema. AUTH-01 has introduced its first migration; later domain entities remain conceptual. Deletion policy and Quran dataset/license must be reviewed before their migrations or integration.
 
 ## Candidate entities
 
 | Entity | Purpose and key relationships |
 |---|---|
 | users | UUID identity/profile, email or phone login identifier, password hash, active state and timestamps; owns personal progress/settings. Never store plaintext passwords. |
+| user_sessions | Opaque token SHA-256 hash, owning user, creation/expiry/revocation timestamps; session token itself is only in an HttpOnly cookie. |
+| auth_rate_limits | Fixed-window scope, HMAC key digest, UTC window start, attempt count and expiry; used for AUTH-01 registration/login throttles. |
 | groups | UUID community/class/cohort, optional organization FK, name/description/creator/active state/time. |
 | organizations | Future institutional container for groups; role scope requires design. |
 | memberships | User-to-group association; role ADMIN/MENTOR/MEMBER, status PENDING/ACTIVE/SUSPENDED/LEFT; unique `(group_id,user_id)` per source; index both FKs; only ACTIVE grants access. Rejoin/history semantics remain open. |

@@ -1,12 +1,13 @@
 # API specification
 
-The API contract is intentionally a baseline. Endpoint names, pagination, error format, authentication method, and versioning details require an implementation decision before the first endpoint is built. Use FastAPI and Pydantic schemas; enforce access in the backend.
+The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-01 currently implements the endpoints below directly at root (no `/api/v1` prefix); later route versioning remains an open contract choice.
 
 The original source proposes the following REST paths as an initial contract, relative to `/api/v1`; retain them as candidates pending detailed request/response schemas:
 
 | Method | Candidate path | Purpose |
 |---|---|---|
 | POST | `/auth/register`, `/auth/login` | Register and authenticate |
+| GET/POST | `/auth/csrf`, `/auth/logout` | Bootstrap CSRF token; revoke current session |
 | GET/PATCH | `/users/me` | Read/update own profile |
 | POST/GET | `/groups` | Create and list own groups |
 | GET/PATCH | `/groups/{id}` | Group detail/update |
@@ -46,3 +47,5 @@ The original source proposes the following REST paths as an initial contract, re
 - Support pagination for member lists and activity history, filters for dates/Surahs/statuses, consistent error responses, and response schemas that do not expose database models directly.
 
 Detailed OpenAPI schemas and endpoint paths are deferred until the product decisions listed in the implementation status are resolved.
+
+AUTH-01 contract: registration accepts email, full name and a 12–256 character password; registration and login establish opaque server-side sessions. `GET /auth/csrf` issues a signed double-submit token cookie and returns the same token for `X-CSRF-Token`. Every unsafe request requires that pair and an exact configured Origin. Session cookies are Secure, HttpOnly, SameSite=Lax, path `/`; they expire after configurable 12-hour default. `GET/PATCH /users/me` acts only on the current user; only `full_name` is patchable. Logout revokes the current database session. Authentication errors avoid revealing whether a login email exists.

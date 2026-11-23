@@ -9,7 +9,7 @@ The original specification proposes the following sequence. F0-A is an owner-app
 | Phase | Deliverable | Main focus |
 |---|---|---|
 | 0 | Development foundation: backend/frontend scaffolding, Compose/PostgreSQL, SQLAlchemy/Alembic, health check, basic UI and environment docs | F0-A approved as a limited foundation slice; broader Phase 0 acceptance remains unauthorized |
-| 1 | Authentication and profile | Sessions, privacy and auth tests |
+| 1 | Authentication and profile | Sessions, privacy and auth tests; VERIFIED |
 | 2 | Groups and memberships | Group CRUD, invitation, many-to-many roles/admins |
 | 3 | Quran reference and memorization | Canonical data, submissions, Ayah status and calculations |
 | 4 | Revision tracking | P0 recording and history; detailed revision analytics are P1 / Release 2 (FR-16, DEC-022) |
@@ -23,8 +23,8 @@ Repository guidance from the source: begin private during development; choose th
 
 | Phase | Acceptance summary from source |
 |---|---|
-| 0 | Frontend/backend run locally, database connects, migrations execute. This phase has not started. |
-| 1 | Register/login, update own profile, deny access to another user's private profile. |
+| 0 | F0-A foundation is verified; broader Phase 0 remains NOT AUTHORIZED. |
+| 1 | Register/login, update own profile, deny access to another user's private profile. AUTH-01 / USER-01 are VERIFIED; see implementation status for evidence. |
 | 2 | Create multiple groups, join multiple groups, admins manage membership, invitations expire or can be revoked. |
 | 3 | Record Quran ranges; calculate progress correctly; derive Juz/page coverage; repeated submissions do not inflate progress. |
 | 4 | Record revision sessions and preserve revision history in P0; keep revision independent of new memorization. Detailed revision analytics are P1 / Release 2 under FR-16 and DEC-022. |
@@ -45,7 +45,7 @@ The broader Phase 0 remains **NOT AUTHORIZED**. F0-A approval does not authorize
 7. Relevant basic tests pass.
 8. README and environment setup instructions are documented.
 
-This checklist records future acceptance criteria only; none of these tasks have been executed.
+This checklist records broader Phase 0 criteria only; the limited F0-A work and its verification are recorded separately above. The remaining checklist work is not authorized.
 
 ## Release 2: accountability and management
 

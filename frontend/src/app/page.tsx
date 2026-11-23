@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Home() {
   const [apiStatus, setApiStatus] = useState("Checking API…");
@@ -19,6 +20,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
       <section className="w-full max-w-xl rounded-2xl border border-emerald-950/10 bg-white p-8 shadow-sm sm:p-12">
+        <nav className="mb-8 flex gap-5"><Link className="underline" href="/login">Sign in</Link><Link className="underline" href="/register">Register</Link><Link className="underline" href="/profile">Profile</Link></nav>
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-800">
           HifzTrack
         </p>
