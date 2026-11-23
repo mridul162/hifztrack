@@ -54,4 +54,4 @@ See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, questions, rationale, option
 
 ## Foundation milestone
 
-F0-A (minimum application foundation) was separately approved and is VERIFIED. The broader Phase 0 checklist remains NOT AUTHORIZED. AUTH-01 / USER-01 remains VERIFIED as recorded above. Phase 2 was explicitly authorized; GROUP-01 / GROUP-02 are IMPLEMENTED pending verification evidence.
+F0-A (minimum application foundation) was separately approved and is VERIFIED. The broader Phase 0 checklist remains NOT AUTHORIZED. AUTH-01 / USER-01 remains VERIFIED as recorded above. Phase 2 was explicitly authorized; GROUP-01 / GROUP-02 are VERIFIED, with PostgreSQL verification evidence recorded above.

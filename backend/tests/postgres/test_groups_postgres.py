@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from threading import Barrier, Event
+from time import monotonic
 from uuid import uuid4
 
 import pytest
@@ -71,6 +72,22 @@ def _request_from(ip: str) -> Request:
     return Request({"type": "http", "http_version": "1.1", "method": "POST", "scheme": "http",
         "path": "/", "raw_path": b"/", "query_string": b"", "headers": [],
         "client": (ip, 50000), "server": ("localhost", 8000)})
+
+
+def _wait_for_postgres_lock_wait(engine, application_name, timeout=10):
+    deadline = monotonic() + timeout
+    query = text("""
+        SELECT EXISTS (
+            SELECT 1 FROM pg_stat_activity
+            WHERE application_name = :application_name AND wait_event_type = 'Lock'
+        )
+    """)
+    while monotonic() < deadline:
+        with engine.connect() as observer:
+            if observer.scalar(query, {"application_name": application_name}):
+                return
+        Event().wait(0.01)
+    pytest.fail(f"PostgreSQL connection {application_name!r} did not enter a lock wait")
 
 
 def _create_invite_as(factory, group_id, admin_id, ip: str):
@@ -202,19 +219,14 @@ def test_expiry_is_rechecked_after_waiting_for_group_lock(pg_sessions, monkeypat
 
     clock = {"now": fixed_now}
     monkeypatch.setattr(service, "utcnow", lambda: clock["now"])
-    attempting_group_lock = Event()
-    original_lock = service.group_for_update
-
-    def notify_before_group_lock(db, locked_group_id):
-        attempting_group_lock.set()
-        return original_lock(db, locked_group_id)
-
-    monkeypatch.setattr(service, "group_for_update", notify_before_group_lock)
+    application_name = f"ht-expiry-{uuid4().hex[:12]}"
     with pg_sessions() as lock_session:
         lock_session.execute(select(Group).where(Group.id == group_id).with_for_update()).one()
 
         def attempt():
             with pg_sessions() as db:
+                db.execute(text("SELECT set_config('application_name', :name, false)"),
+                           {"name": application_name})
                 user = db.get(User, invitee_id)
                 try:
                     service.accept_invitation(db, token, user)
@@ -225,7 +237,7 @@ def test_expiry_is_rechecked_after_waiting_for_group_lock(pg_sessions, monkeypat
 
         with ThreadPoolExecutor(max_workers=1) as pool:
             result = pool.submit(attempt)
-            assert attempting_group_lock.wait(timeout=10)
+            _wait_for_postgres_lock_wait(lock_session.get_bind(), application_name)
             clock["now"] = fixed_now + timedelta(seconds=2)
             lock_session.commit()
             outcome = result.result(timeout=10)
@@ -243,19 +255,14 @@ def test_invitation_revocation_wins_when_it_holds_group_lock_first(pg_sessions, 
         invitation, token = _invitation(db, group, admins[0], 1)
         group_id, invite_id, invitee_id = group.id, invitation.id, invitee.id
         db.commit()
-    attempting_group_lock = Event()
-    original_lock = service.group_for_update
-
-    def notify_before_group_lock(db, locked_group_id):
-        attempting_group_lock.set()
-        return original_lock(db, locked_group_id)
-
-    monkeypatch.setattr(service, "group_for_update", notify_before_group_lock)
+    application_name = f"ht-revoke-{uuid4().hex[:12]}"
     with pg_sessions() as revoker:
         revoker.execute(select(Group).where(Group.id == group_id).with_for_update()).one()
 
         def attempt():
             with pg_sessions() as db:
+                db.execute(text("SELECT set_config('application_name', :name, false)"),
+                           {"name": application_name})
                 try:
                     service.accept_invitation(db, token, db.get(User, invitee_id))
                     return "accepted"
@@ -265,7 +272,7 @@ def test_invitation_revocation_wins_when_it_holds_group_lock_first(pg_sessions, 
 
         with ThreadPoolExecutor(max_workers=1) as pool:
             result = pool.submit(attempt)
-            assert attempting_group_lock.wait(timeout=10)
+            _wait_for_postgres_lock_wait(revoker.get_bind(), application_name)
             invitation = revoker.get(GroupInvitation, invite_id)
             invitation.revoked_at = datetime.now(timezone.utc)
             revoker.commit()
