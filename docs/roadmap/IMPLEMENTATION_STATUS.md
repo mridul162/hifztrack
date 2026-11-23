@@ -2,9 +2,13 @@
 
 ## Status
 
-Repository currently contains documentation only. Application features: `NOT_STARTED`. No feature is `IMPLEMENTED` or `VERIFIED`. Phase 0 is NOT_STARTED and NOT AUTHORIZED; no application scaffolding, services, dependencies, or Phase 0 acceptance tasks have been started.
+F0-A (minimum application foundation) is authorized and implemented: Next.js frontend, FastAPI backend, PostgreSQL Compose service, health endpoints, and an empty Alembic baseline. Foundation verification is recorded below. No product feature is implemented or verified. The broader Phase 0 checklist remains NOT AUTHORIZED and must not be inferred from F0-A approval.
 
 Status meanings: `NOT_STARTED` = no implementation; `IN_PROGRESS` = actively being built; `IMPLEMENTED` = code exists, verification pending; `VERIFIED` = acceptance criteria and relevant tests pass.
+
+Quran source data was inspected and comment-only well-formed derivative translation XML files were created under `data/quran/derived/translations/`; see [`data/quran/validation/VALIDATION_REPORT.md`](../../data/quran/validation/VALIDATION_REPORT.md) and rerunnable [`validate_datasets.py`](../../data/quran/validation/validate_datasets.py). All three original translation files still fail strict XML parsing and remain unchanged. Derivatives pass structural and content-preservation checks. This does not implement or verify QURAN-01 and does not resolve DEC-002: translation/metadata licensing evidence remains incomplete. Phase 0 remains NOT AUTHORIZED.
+
+F0-A status: VERIFIED. Backend development dependencies installed; all four backend tests pass; local liveness returns 200 and readiness returns 503 without PostgreSQL; Next.js production build passes; `npm audit` reports zero vulnerabilities; Compose configuration validates; PostgreSQL, FastAPI, and Next.js containers start healthy; frontend-to-backend networking and local-origin CORS work; and `alembic upgrade head` succeeds against a fresh PostgreSQL 17 database. The database contains only `alembic_version`; no business tables exist. This milestone does not include AUTH-01, domain models, or Quran reference integration. See the README for setup.
 
 ## Source coverage and reconciliation
 
@@ -44,6 +48,6 @@ Extended proposals beyond original functional requirements include personal acco
 
 See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, questions, rationale, options/consequences, provisional recommendations, and approval requirements. Source recovery is resolved. Remaining key decisions include status transitions, sharing actor/default, membership history, assessment effects, and Quran dataset/license.
 
-## Recommended first implementation milestone
+## Foundation milestone
 
-Before application code, review this reconciliation and obtain approval for product decisions affecting schema/privacy. Then separately approve a roadmap phase. No application milestone has started; this task does not start Phase 0.
+F0-A (minimum application foundation) was separately approved. It is limited to application scaffolding, health checks, database connectivity, migrations with no business tables, local Compose services, and setup documentation. Approval of F0-A does not authorize the broader Phase 0 checklist or AUTH-01.

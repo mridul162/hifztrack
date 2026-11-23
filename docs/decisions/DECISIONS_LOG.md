@@ -25,3 +25,7 @@ Record approved decisions with ID, date, context, decision, consequences, and st
 ## ADR-006: No premature deferred work
 
 **Status:** Accepted baseline. **Decision:** Preserve all planned features in the catalog, but implement only the approved release/milestone scope.
+
+## ADR-007: Authentication and session baseline
+
+**Status:** Accepted by the product owner for the future AUTH-01 milestone. **Decision:** Use email as the account identifier, Argon2id password hashing, server-side sessions persisted in PostgreSQL, Secure/HttpOnly/SameSite cookies, and server-side logout revocation. Defer password recovery and MFA while retaining future extensibility. **Scope:** This decision records policy only; it does not authorize or implement AUTH-01. CSRF protection and rate-limit details remain security requirements to resolve before affected endpoints ship.

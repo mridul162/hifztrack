@@ -4,11 +4,11 @@ Implement one approved milestone at a time. The complete product inventory is in
 
 ## Source-aligned milestone sequence
 
-The original specification proposes the following sequence. Phase 0 is documented for traceability only; this reconciliation task does not start it.
+The original specification proposes the following sequence. F0-A is an owner-approved, limited foundation task; it does not authorize the remaining Phase 0 checklist.
 
 | Phase | Deliverable | Main focus |
 |---|---|---|
-| 0 | Development foundation: backend/frontend scaffolding, Compose/PostgreSQL, SQLAlchemy/Alembic, health check, basic UI and environment docs | Not started and not authorized by this documentation task |
+| 0 | Development foundation: backend/frontend scaffolding, Compose/PostgreSQL, SQLAlchemy/Alembic, health check, basic UI and environment docs | F0-A approved as a limited foundation slice; broader Phase 0 acceptance remains unauthorized |
 | 1 | Authentication and profile | Sessions, privacy and auth tests |
 | 2 | Groups and memberships | Group CRUD, invitation, many-to-many roles/admins |
 | 3 | Quran reference and memorization | Canonical data, submissions, Ayah status and calculations |
@@ -32,9 +32,9 @@ Repository guidance from the source: begin private during development; choose th
 | 6 | Dashboard progress is accurate and group statistics include only authorized shared data (P0). The source also asks for date-based reports in this phase; FR-16 classifies historical reports/analytics as P1, so those reports belong to Release 2 unless the owner approves a scope change. |
 | 7 | Automated tests cover critical services and negative authorization; migrations and Docker deployment work; backups and error monitoring are configured. |
 
-### Phase 0 acceptance checklist (future work only)
+### Phase 0 acceptance checklist (broader work not authorized)
 
-Phase 0 remains **NOT_STARTED and NOT AUTHORIZED**. When separately approved, its acceptance requires:
+The broader Phase 0 remains **NOT AUTHORIZED**. F0-A approval does not authorize completing this checklist. When separately approved, its acceptance requires:
 
 1. Docker Compose starts the application services.
 2. FastAPI starts and its health endpoint responds.
