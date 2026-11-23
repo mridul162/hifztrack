@@ -4,12 +4,12 @@
 
 Use a modular monolith with a layered REST API: Next.js + TypeScript responsive frontend, FastAPI backend, Pydantic validation, SQLAlchemy 2.0 persistence, PostgreSQL, Alembic migrations, and Docker Compose. Do not introduce microservices, message brokers, Kubernetes, or complex distributed infrastructure for the MVP.
 
-The original describes the product as multi-tenant. Model a global user identity with group-scoped membership/roles and optional organization-to-group association; the exact tenant isolation boundary remains unresolved in DEC-021. Personal progress remains owned centrally by the user.
+The original describes the product as multi-tenant. Use a global user identity with group-scoped membership/roles and optional organization-to-group metadata. DEC-021 resolves that an organization association grants no access; no organization-level roles, membership, or authorization are implemented. Personal progress remains owned centrally by the user.
 
 ## Logical boundaries
 
 - **Frontend:** authentication/session experience, Quran navigation, personal trackers, group/member views, settings, and later modules.
-- **API:** versioned HTTP endpoints; authentication, validation, authorization, and stable response contracts.
+- **API:** root-level HTTP endpoints following AUTH-01; authentication, validation, authorization, and stable response contracts. API versioning remains a future architectural decision; do not imply a `/api/v1` prefix is implemented.
 - **Application/domain modules:** identity, Quran reference, memorization, revision, groups/sharing, dashboards; later goals, mentorship, notification, and analytics modules.
 - **Persistence:** relational entities and repositories; migrations are the only schema evolution mechanism.
 - **Background work:** defer selection of a job mechanism until scheduled notifications or exports require it.

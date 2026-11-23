@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.health import router as health_router
 from app.api.auth import router as auth_router
+from app.api.groups import router as groups_router
 from app.auth.csrf import CsrfProtectionMiddleware
 from app.core.config import settings
 
@@ -17,3 +18,4 @@ app.add_middleware(
 app.add_middleware(CsrfProtectionMiddleware)
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(groups_router)

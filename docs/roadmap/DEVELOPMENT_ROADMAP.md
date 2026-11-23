@@ -17,6 +17,8 @@ The original specification proposes the following sequence. F0-A is an owner-app
 | 6 | Mentor and dashboards | Optional assessment, personal/group dashboards and basic analytics |
 | 7 | Production readiness | CI/CD, logging, backups, deployment and security review |
 
+GROUP-01 and GROUP-02 are IMPLEMENTED in the working tree; milestone verification remains pending until PostgreSQL migration upgrade/downgrade and concurrency checks pass.
+
 Detailed milestone acceptance criteria from the source are retained in the feature catalog and corresponding requirements. Before any phase begins, the owner approves scope, review gates, and open decisions. Git guidance from the source is to use GitHub, keep `main` as default and `develop` as integration branch, use feature branches for work, inspect diffs, and commit only after verification; do not auto-commit or merge.
 
 Repository guidance from the source: begin private during development; choose the license before public release; `.gitignore` should follow the Python/backend setup; never commit secrets. Review one task/milestone at a time, run relevant tests, and have the project owner review and approve changes.

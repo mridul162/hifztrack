@@ -17,6 +17,10 @@ The MVP is the first usable release, not the full product. Deferred features rem
 - Personal dashboard: total memorized, learning/strong portions, recent memorization/revision, memberships. Group dashboard: member count, permitted current-state progress, recent activity, and basic current-state summaries; the exact P0 group-statistic set remains DEC-018.
 - Mentor assessment remains optional and P1 as a workflow. Keep the data model able to represent assessments and mentor assignments without implementing assessment UI in MVP. Organization-to-group data-model support is required; complex institutional administration is excluded from MVP.
 
+Phase 2 organization support is a minimal `organizations` table and nullable `groups.organization_id`. This association is metadata only: organization membership, roles, administration, and access grants are out of scope. Group access always requires an ACTIVE membership in that group.
+
+Phase 2 organization support is a minimal `organizations` table and nullable `groups.organization_id`. This association is metadata only: organization membership, roles, administration, and access grants are out of scope. Group access always requires an ACTIVE membership in that group.
+
 ## Excluded from MVP
 
 P1/Release 2 exclusions: individual/group targets, full mentor assignment/assessment workflow, notifications, announcements, historical reports and analytics. Also deferred proposals: schedules, activity feed/challenges, personal notes, recommendations, audio, offline sync, WhatsApp, and AI evaluation. P2/later: progress-report export. Personal account-data export is an extended proposal, not in the originals. Complex institutional administration, real-time chat, complex gamification, native mobile apps, microservices, subscriptions and payments are excluded from MVP.

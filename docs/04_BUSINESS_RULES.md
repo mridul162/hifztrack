@@ -31,8 +31,21 @@
 21. Group roles and membership changes are authorized and auditable; only ACTIVE memberships grant group access.
 22. Derived analytics and reports must honor the same permissions as source records.
 23. Source invitation tokens are random, stored hashed, expiring, revocable, and may have a maximum-use count.
-24. Source membership roles are ADMIN, MENTOR, MEMBER; states are PENDING, ACTIVE, SUSPENDED, LEFT. Only ACTIVE grants access. The source's unique `(group_id,user_id)` constraint leaves rejoin history to DEC-017.
+24. Source membership roles are ADMIN, MENTOR, MEMBER; states are PENDING, ACTIVE, SUSPENDED, LEFT. Only ACTIVE grants access. Phase 2 resolves rejoin history and current-row uniqueness as documented below.
 
-## Unresolved policy details
+## Approved Phase 2 group rules
 
-The canonical Quran dataset/license, Ayah status transitions and verification criteria (DEC-004), overlap/correction semantics, sharing field matrix/defaults, retention after leaving a group, deletion/export behavior, mentor consent and assessment vocabulary, timezone boundaries, and audit retention need decisions before affected features are implemented.
+- A group starts ACTIVE. ARCHIVED groups are read-only: no invitations or membership changes, all outstanding invitations are revoked, existing members may leave, and history is retained. Permanent deletion is not implemented.
+- A nullable organization link is metadata only and does not grant group access. Organization roles, membership, and authorization are out of scope.
+- A membership episode has exactly one ADMIN, MENTOR, or MEMBER role. Multiple users may hold ADMIN or MENTOR in one group; a user can hold different roles across groups.
+- Current membership uniqueness is enforced by a PostgreSQL partial unique index for `(group_id,user_id)` where state is PENDING, ACTIVE, or SUSPENDED. LEFT episodes remain historical; rejoining creates a new episode.
+- Group creator receives ACTIVE ADMIN membership atomically with group creation. Only ACTIVE ADMIN manages group metadata, invitations, and other memberships. At least one ACTIVE ADMIN must remain; group-row locking serializes changes.
+- Invitation acceptance creates ACTIVE MEMBER membership. Invitations expire after seven days by default, default to one successful use, can be explicitly capped up to 100 uses, are revocable, and store only an HMAC digest. Plaintext appears only in the creation response. Leaving or losing active ADMIN membership revokes invitations created by that user; archiving revokes all outstanding invitations.
+- Invitation throttles use PostgreSQL HMAC counters: creation 10/user/hour, 30/group/hour, 20/IP/hour; acceptance attempts 30/IP/15 minutes and 10/token digest/15 minutes. Rate limiting returns generic 429 with Retry-After and does not invalidate invitations or lock accounts.
+- Group roster exposes display name, role, state, and membership timestamps only; it does not expose email or authentication/session data.
+
+The canonical source invitation and membership rules above replace the earlier unresolved notes for these decisions.
+
+## Remaining unresolved policy details
+
+The canonical Quran dataset/license, Ayah status transitions and verification criteria (DEC-004), overlap/correction semantics, sharing field matrix/defaults, deletion/export behavior, mentor consent and assessment vocabulary, timezone boundaries, and broader audit retention need decisions before affected features are implemented.

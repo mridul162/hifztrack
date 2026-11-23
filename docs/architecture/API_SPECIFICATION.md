@@ -1,18 +1,21 @@
 # API specification
 
-The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-01 currently implements the endpoints below directly at root (no `/api/v1` prefix); later route versioning remains an open contract choice.
-
-The original source proposes the following REST paths as an initial contract, relative to `/api/v1`; retain them as candidates pending detailed request/response schemas:
+The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-01 and Phase 2 use root-level routes without an `/api/v1` prefix. API versioning remains a future architectural decision. The original source proposed `/api/v1` routes; Phase 2 does not retrofit that prefix.
 
 | Method | Candidate path | Purpose |
 |---|---|---|
 | POST | `/auth/register`, `/auth/login` | Register and authenticate |
 | GET/POST | `/auth/csrf`, `/auth/logout` | Bootstrap CSRF token; revoke current session |
 | GET/PATCH | `/users/me` | Read/update own profile |
-| POST/GET | `/groups` | Create and list own groups |
-| GET/PATCH | `/groups/{id}` | Group detail/update |
-| POST | `/groups/{id}/invitations`, `/invitations/join` | Create invitation and join |
-| GET | `/groups/{id}/members` | List authorized members |
+| POST/GET | `/groups` | Create group (creator becomes ACTIVE ADMIN atomically); list ACTIVE memberships |
+| GET/PATCH | `/groups/{id}` | Read/update group metadata for ACTIVE members/admins |
+| POST | `/groups/{id}/archive` | Archive group; revoke invitations; preserve history |
+| GET | `/groups/{id}/members?limit=&offset=` | Paginated roster for ACTIVE members, minimal display fields |
+| POST/GET | `/groups/{id}/invitations` | Admin create (one-time plaintext token response) and list (digest never exposed) |
+| POST | `/groups/{id}/invitations/{invitation_id}/revoke` | Revoke an invitation as ACTIVE ADMIN |
+| POST | `/invitations/accept` | Accept a valid invitation as authenticated user; create ACTIVE MEMBER episode |
+| PATCH | `/groups/{id}/members/{membership_id}` | Admin update a member's role/state; last-active-admin invariant enforced |
+| POST | `/groups/{id}/leave` | Leave own active membership; preserve LEFT episode |
 | PATCH | `/groups/{id}/members/{user_id}/sharing` | Original path suggestion; actor/ownership ambiguity is tracked as DEC-016 |
 | GET | `/quran/surahs`, `/quran/ayahs` | Browse Quran reference |
 | POST | `/memorization` | Submit Sabaq |
@@ -33,6 +36,15 @@ The original source proposes the following REST paths as an initial contract, re
 | SHARE-01 | get/update sharing settings per group | Permission owner/actor is unresolved; changes apply to subsequent reads. Never allow group admin to override a learner's privacy setting absent explicit policy. |
 | DASH-01 | personal dashboard, group dashboard, member summary | Group response filtered by member sharing and viewer permission. |
 | MENTOR-01/02 | assignment and assessment resources (Release 2) | Assigned scope, learner consent, and audit required. |
+
+## Group authorization and invitation contract
+
+- Every operation derives the actor from the existing AUTH-01 session and uses the existing CSRF middleware for unsafe requests.
+- Only ACTIVE memberships grant access. MEMBER and MENTOR can read group details/roster and leave; only ADMIN manages metadata, invitations, and other members. Roles are group-scoped.
+- Group creation and initial ADMIN membership are one transaction. Group/member reads are not granted by organization association.
+- Invitation role is always MEMBER; plaintext token is returned only at creation, stored as HMAC digest, expires after seven days by default, and defaults to one successful use (API supports an explicit cap up to 100). Counters are atomic under locks.
+- Invitation throttles use separate PostgreSQL HMAC counters: 10/user/hour, 30/group/hour, 20/IP/hour creation; 30/IP/15m and 10/token digest/15m acceptance. Responses are generic 429 with Retry-After.
+- Roster exposes display name, membership role/state and timestamps only; no email or authentication fields.
 
 ## Contract requirements
 

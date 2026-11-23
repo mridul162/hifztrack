@@ -12,6 +12,8 @@ F0-A verification at completion: backend tests, local liveness/readiness behavio
 
 AUTH-01 / USER-01 status: VERIFIED. Thirteen backend tests pass, including registration/duplicate handling, password hashing, valid/invalid login, session persistence/expiry/revocation, current-user profile access/update, cross-account session isolation, CSRF validation, and registration/login throttles. The AUTH-01 migration applied to local PostgreSQL, `alembic check` reports no schema drift, and a PostgreSQL-backed registration/login/profile/revocation smoke flow passed with its temporary account removed. Next.js production build passes; Compose rebuild/start produced healthy PostgreSQL, API, and frontend services; API liveness and `/login` return 200. Compose configuration and `git diff --check` pass. No Quran data was ingested or integrated. The broader Phase 0 remains NOT AUTHORIZED.
 
+GROUP-01 / GROUP-02 status: IMPLEMENTED; verification is pending. Phase 2 code now includes group lifecycle, organization association, membership episodes and events, invitations, scoped authorization, invitation throttles, frontend group flows, and migration `0003_groups`. Twenty-five backend tests, SQLite migration upgrade/downgrade and schema-drift checks, frontend TypeScript, and Next.js production build pass. PostgreSQL migration upgrade/downgrade and concurrent-request verification remain unverified and are required before VERIFIED. This work does not implement sharing, dashboards, Quran tracking, or mentor workflows.
+
 ## Source coverage and reconciliation
 
 Reviewed `docs/source/original_specification.md` and `docs/source/original_specification_2.md`; they remain preserved unchanged. The first contains PRD, FR-01..FR-17, business/data rules, schema, architecture, REST candidates, UI and eight-phase plan. The second contains repository and development workflow guidance. Requirements now map original FR IDs to current feature IDs and coverage.
@@ -38,7 +40,7 @@ Extended proposals beyond original functional requirements include personal acco
 - Source PATCH path targets another member's sharing settings although product intent gives each owner control. Do not grant group-admin override without explicit approval.
 - Source P0 dashboards mention personal goals and announcements although FR-13/FR-15 are P1. The UI docs make those panels conditional; do not imply P1 functionality exists in MVP.
 - `memorization_entries` are preserved historical activity but have SUBMITTED/CANCELLED state; cancellation/correction semantics remain open under DEC-005.
-- Membership uniqueness `(group_id,user_id)` plus LEFT status leaves rejoin/history behavior unspecified.
+- Phase 2 resolves membership episodes: at most one PENDING/ACTIVE/SUSPENDED row per `(group_id,user_id)` using a partial unique index; LEFT rows are retained and excluded so rejoin creates a new episode.
 - Assessments are separate records and do not automatically change learner status. Whether an explicit status-transition workflow may ever be permitted remains DEC-019; if approved, it must be transactional.
 - Sharing booleans do not specify how summary and detailed overall-progress views are encoded; DEC-023 keeps the representation open.
 - `group_goals` lacks the `goal_type` available in `user_goals`; type and completion calculations remain open under DEC-024.
@@ -48,8 +50,8 @@ Extended proposals beyond original functional requirements include personal acco
 
 ## Open decisions
 
-See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, questions, rationale, options/consequences, provisional recommendations, and approval requirements. Source recovery is resolved. Remaining key decisions include status transitions, sharing actor/default, membership history, assessment effects, and Quran dataset/license.
+See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, questions, rationale, options/consequences, and approval status. DEC-007/008/009 (group invitations)/017/020/021 were approved for Phase 2 on 2026-11-23. Remaining key decisions include status transitions, sharing actor/default, assessment effects, and Quran dataset/license.
 
 ## Foundation milestone
 
-F0-A (minimum application foundation) was separately approved and is VERIFIED. The broader Phase 0 checklist remains NOT AUTHORIZED. AUTH-01 was separately authorized by the current task; its implementation remains IN_PROGRESS until acceptance evidence is complete.
+F0-A (minimum application foundation) was separately approved and is VERIFIED. The broader Phase 0 checklist remains NOT AUTHORIZED. AUTH-01 / USER-01 remains VERIFIED as recorded above. Phase 2 was explicitly authorized; GROUP-01 / GROUP-02 are IMPLEMENTED pending verification evidence.

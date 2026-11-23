@@ -1,6 +1,6 @@
 # Database design
 
-This is a source-reconciled conceptual baseline, not a finalized migration specification. The original recommends PostgreSQL, SQLAlchemy 2.0, UUID primary keys and a normalized relational schema. AUTH-01 has introduced its first migration; later domain entities remain conceptual. Deletion policy and Quran dataset/license must be reviewed before their migrations or integration.
+This documents the implemented baseline and remaining conceptual entities. The project uses PostgreSQL, SQLAlchemy 2.0, UUID primary keys, and Alembic migrations. AUTH-01 is in migration `0002_auth`; GROUP-01/GROUP-02 schema is in `0003_groups`. Quran dataset/license decisions remain required before Quran reference integration.
 
 ## Candidate entities
 
@@ -9,10 +9,12 @@ This is a source-reconciled conceptual baseline, not a finalized migration speci
 | users | UUID identity/profile, email or phone login identifier, password hash, active state and timestamps; owns personal progress/settings. Never store plaintext passwords. |
 | user_sessions | Opaque token SHA-256 hash, owning user, creation/expiry/revocation timestamps; session token itself is only in an HttpOnly cookie. |
 | auth_rate_limits | Fixed-window scope, HMAC key digest, UTC window start, attempt count and expiry; used for AUTH-01 registration/login throttles. |
-| groups | UUID community/class/cohort, optional organization FK, name/description/creator/active state/time. |
-| organizations | Future institutional container for groups; role scope requires design. |
-| memberships | User-to-group association; role ADMIN/MENTOR/MEMBER, status PENDING/ACTIVE/SUSPENDED/LEFT; unique `(group_id,user_id)` per source; index both FKs; only ACTIVE grants access. Rejoin/history semantics remain open. |
-| group_invitations | Group, random hashed invite code, creator, expiry, optional max uses, used count, active/revoked status. |
+| groups | UUID community/class/cohort, nullable organization FK, name/description/creator, ACTIVE/ARCHIVED lifecycle, timestamps. Archive is read-only, blocks invitations and membership changes, revokes outstanding invitations, and preserves history; members may leave. Hard deletion is not implemented. |
+| organizations | Minimal UUID/name/timestamps table. The optional group association grants no access; organization membership, roles, administration, and authorization are out of scope. |
+| group_memberships | Membership episode with role ADMIN/MENTOR/MEMBER, state PENDING/ACTIVE/SUSPENDED/LEFT, join/leave and audit timestamps. PostgreSQL partial unique index on `(group_id,user_id)` covers PENDING/ACTIVE/SUSPENDED only; LEFT episodes remain as history and rejoining creates a new row. Only ACTIVE grants access. |
+| group_invitations | Group, creator, unique HMAC token digest, expiry, capped use count, used count, revocation and created timestamps. Default expiry is 7 days and max uses 1; plaintext is returned only at creation. |
+| group_membership_events | Append-only role/state/join/leave event record with membership/group/actor, prior/new value and timestamp; no unrelated personal fields. |
+| group_rate_limits | PostgreSQL fixed-window counters with HMAC digests, UTC window start, attempts and expiry; separate from AUTH-01 counters. |
 | group_sharing_settings | Unique membership FK; five controls for overall progress, memorization logs, revision logs, goals, assessments; updated timestamp; privacy-conscious default. How summary versus detailed overall progress maps to these controls is unresolved (DEC-023); no visibility-level schema is selected. |
 | quran_surahs / quran_ayahs | 114 Surahs; stable Quran-wide ID for 6,236 Ayahs, Surah/local Ayah number, Juz and Madani page number; unique `(surah_id,ayah_number)` and validated canonical import. |
 | quran_juz / quran_pages / mappings | Canonical mappings from references to Ayahs; data import provenance required. |
@@ -37,15 +39,15 @@ Original later-stage entities also include announcements, notifications, mentor 
 - Revision history does not mutate memorization status.
 - Assessment records identify assessor, learner, referenced activity/range, and timestamp without replacing learner entries.
 - Assessment does not automatically mutate learner status. Any approved future status transition is atomic with its assessment (DEC-019).
-- Each membership carries its own role scope, allowing the same user to have different roles in different groups.
+- Each membership episode carries one role, allowing the same user to have different roles in different groups. Multiple admins and mentors per group are allowed.
 - Surah/Ayah are canonical reference coordinates. Juz and Mushaf page references are derived through versioned canonical mappings; they are not separate progress stores.
 - Current Ayah state and preserved historical Sabaq activity are separate concepts and tables; cancellation (`SUBMITTED`/`CANCELLED`), correction, and status-history behavior remain under DEC-005.
 - Memorization submission and resulting current-state updates occur in one service-layer transaction. Any approved assessment-triggered progress update is atomic with the assessment.
 - Validate Quran ranges through canonical ordering; numeric ID arithmetic alone is not sufficient validation.
 - Current-state progress is counted per Ayah, not by the number of activity submissions.
 - Group analytics keep unique Ayah totals, mean individual completion, milestone counts, and participation rate as distinct labeled metrics.
-- Invitation tokens are random, hashed, expiring, revocable, and may have use limits.
+- Invitation tokens are random, HMAC-digested, expiring, revocable, and use-limited. Acceptance and last-admin protection serialize on the group row; invitation consumption also locks the invitation and increments use count in the same transaction.
 
 ## Open schema decisions
 
-Open schema details include correction/rejoin semantics, date/time and timezone representation, exact Quran dataset/version/license, range representation, sharing visibility representation (DEC-023) and API actor, group goal type/completion (DEC-024), audit scope, and organization inheritance. The source recommends one current progress row per user/Ayah plus separately preserved activity history; it does not specify cancellation semantics or the complete status event log.
+Open schema details include date/time policy, Quran dataset/version/license, range representation, sharing visibility representation (DEC-023) and API actor, group goal type/completion (DEC-024), and broader audit retention. Organization inheritance is not used for authorization. Membership episode, group lifecycle, invitation policy, and minimal organization support are resolved in DEC-007/008/009/017/020/021.

@@ -17,5 +17,6 @@ Global user identity and group-scoped role are separate. A person may be an admi
 - Treat sharing preferences as per-user, per-group controls, with privacy-conscious defaults.
 - Filter or reject group reads that exceed the viewer's scope; never rely on frontend hiding.
 - A membership ending revokes future group access. Retention of already-created group artifacts is an open policy question.
+- Only ACTIVE memberships grant group access. For Phase 2, ACTIVE MEMBER/MENTOR can read group details and roster and leave; ACTIVE ADMIN additionally manages metadata, invitations, and other members' role/state. Authorization is checked within that group on every request. Archived groups are read-only except a current member may leave.
 - Mentorship does not itself imply access beyond the learner's chosen sharing settings.
 - Record sensitive role and access changes in an audit trail.

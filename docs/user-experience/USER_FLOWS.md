@@ -14,10 +14,10 @@ The source MVP dashboard includes total Quran memorized, learning and strong por
 
 ## Group participation (MVP)
 
-1. Create a group or accept an invitation to join. Join requests are a proposed extension, not original P0 scope.
-2. Review group role and configure sharing for that specific group.
-3. Browse group dashboard/member views; see only information each member allows.
-4. Update sharing or leave; subsequent group requests respect the change immediately.
+1. Create an ACTIVE group; the creator receives an ACTIVE ADMIN membership in the same transaction, or accept a valid invitation as an ACTIVE MEMBER. Join requests are a proposed extension, not original P0 scope.
+2. Review group role and roster. Only ACTIVE memberships grant access; MEMBER and MENTOR read group information and may leave. ADMIN manages group metadata, invitations and other members' role/state.
+3. Admins create seven-day invitations (one successful use by default), distribute the one-time token link, and may revoke outstanding invitations. The roster shows display name, role, state and membership timestamps, never email.
+4. A member leaves; the LEFT membership episode remains in history and later rejoining creates a new episode. Admins may archive a group; archive revokes invitations and makes the group read-only, while existing members may still leave.
 
 The source group dashboard includes member count, shared member progress, recent activities, and group statistics. Announcements were P1/Release 2, so the dashboard must not imply they are available in MVP.
 

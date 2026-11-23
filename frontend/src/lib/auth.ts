@@ -30,3 +30,13 @@ export async function getProfile(): Promise<UserProfile> {
   if (!response.ok) throw new Error("Sign in to view your profile.");
   return (await response.json()) as UserProfile;
 }
+
+export async function getJson<T>(path: string): Promise<T> {
+  const response = await fetch(`${apiUrl}${path}`, { credentials: "include", cache: "no-store" });
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Sign in to continue.");
+    const data = (await response.json().catch(() => ({}))) as { detail?: string };
+    throw new Error(data.detail ?? "Request failed.");
+  }
+  return (await response.json()) as T;
+}
