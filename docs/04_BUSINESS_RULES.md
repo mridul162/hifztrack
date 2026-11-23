@@ -18,7 +18,7 @@
 11. The reference dataset covers 114 Surahs, 30 Juz, 6,236 Ayahs, and 604 Madani Mushaf pages under a documented convention. Each Ayah has a stable identifier and the dataset is validated at import.
 12. Validate ranges against canonical Quran order; ranges may cross Surah boundaries, and numeric IDs alone must not substitute for location validation.
 13. Current progress comes from `user_ayah_progress`, not activity counts. MEMORIZED and STRONG coverage may be reported separately using the 6,236 Ayah denominator.
-14. Source-proposed statuses are NOT_STARTED, LEARNING, MEMORIZED, STRONG. STRONG requires explicit assessment or a defined verification rule; exact transitions remain pending approval.
+14. The established Ayah statuses are NOT_STARTED, LEARNING, MEMORIZED, and STRONG. Allowed transitions, regression criteria, and STRONG verification rules remain unresolved under DEC-004.
 
 ## History and assessment
 
@@ -35,4 +35,4 @@
 
 ## Unresolved policy details
 
-The canonical Quran dataset/license, Ayah status vocabulary, overlap/correction semantics, sharing field matrix/defaults, retention after leaving a group, deletion/export behavior, mentor consent and assessment vocabulary, timezone boundaries, and audit retention need decisions before affected features are implemented.
+The canonical Quran dataset/license, Ayah status transitions and verification criteria (DEC-004), overlap/correction semantics, sharing field matrix/defaults, retention after leaving a group, deletion/export behavior, mentor consent and assessment vocabulary, timezone boundaries, and audit retention need decisions before affected features are implemented.

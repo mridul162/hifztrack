@@ -12,7 +12,7 @@ The original specification proposes the following sequence. Phase 0 is documente
 | 1 | Authentication and profile | Sessions, privacy and auth tests |
 | 2 | Groups and memberships | Group CRUD, invitation, many-to-many roles/admins |
 | 3 | Quran reference and memorization | Canonical data, submissions, Ayah status and calculations |
-| 4 | Revision tracking | Separate sessions, history and revision analytics |
+| 4 | Revision tracking | P0 recording and history; detailed revision analytics are P1 / Release 2 (FR-16, DEC-022) |
 | 5 | Sharing and authorization | Per-membership visibility and negative security tests |
 | 6 | Mentor and dashboards | Optional assessment, personal/group dashboards and basic analytics |
 | 7 | Production readiness | CI/CD, logging, backups, deployment and security review |
@@ -27,7 +27,7 @@ Repository guidance from the source: begin private during development; choose th
 | 1 | Register/login, update own profile, deny access to another user's private profile. |
 | 2 | Create multiple groups, join multiple groups, admins manage membership, invitations expire or can be revoked. |
 | 3 | Record Quran ranges; calculate progress correctly; derive Juz/page coverage; repeated submissions do not inflate progress. |
-| 4 | Record revision sessions; preserve revision history; keep revision independent of new memorization. |
+| 4 | Record revision sessions and preserve revision history in P0; keep revision independent of new memorization. Detailed revision analytics are P1 / Release 2 under FR-16 and DEC-022. |
 | 5 | Configure sharing per group; group APIs do not expose private information; leaving revokes future access. |
 | 6 | Dashboard progress is accurate and group statistics include only authorized shared data (P0). The source also asks for date-based reports in this phase; FR-16 classifies historical reports/analytics as P1, so those reports belong to Release 2 unless the owner approves a scope change. |
 | 7 | Automated tests cover critical services and negative authorization; migrations and Docker deployment work; backups and error monitoring are configured. |
