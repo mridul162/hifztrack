@@ -12,7 +12,7 @@ from starlette.requests import Request
 
 from app.api.groups import accept_invite, create_invitation, leave_group
 from app.groups import rate_limit, service
-from app.models import (Group, GroupInvitation, GroupMembership, GroupRateLimit, User)
+from app.models import (Group, GroupInvitation, GroupMembership, GroupRateLimit, GroupSharingSettings, User)
 from app.schemas.groups import InvitationAccept, InvitationCreate
 
 
@@ -45,6 +45,28 @@ def _invitation(db, group: Group, admin: User, max_uses: int) -> tuple[GroupInvi
     db.add(invitation)
     db.flush()
     return invitation, token
+
+
+def test_sharing_settings_database_defaults_and_membership_uniqueness(pg_sessions):
+    with pg_sessions() as db:
+        group, admins = _group(db)
+        membership = db.scalar(select(GroupMembership).where(
+            GroupMembership.group_id == group.id, GroupMembership.user_id == admins[0].id
+        ))
+        settings = GroupSharingSettings(membership_id=membership.id)
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+        assert settings.overall_progress_visibility == "SUMMARY"
+        assert settings.share_memorization_logs is False
+        assert settings.share_revision_logs is False
+        assert settings.share_goals is False
+        assert settings.share_assessments is False
+
+        db.add(GroupSharingSettings(membership_id=membership.id))
+        with pytest.raises(IntegrityError):
+            db.flush()
+        db.rollback()
 
 
 def _accept_concurrently(factory, token: str, user_ids: list):

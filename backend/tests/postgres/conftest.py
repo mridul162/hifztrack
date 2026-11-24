@@ -11,16 +11,17 @@ EXPECTED_TABLES = {
     "quran_juzs", "quran_pages", "quran_reference_sources", "user_ayah_progress",
     "revision_sessions",
     "memorization_entries",
+    "group_sharing_settings",
 }
 APPLICATION_TABLES = (
     "organizations", "groups", "group_memberships", "group_invitations",
     "group_membership_events", "group_rate_limits", "auth_rate_limits",
     "user_sessions", "users", "quran_surahs", "quran_ayahs", "quran_juzs",
     "quran_pages", "quran_reference_sources", "user_ayah_progress", "memorization_entries",
-    "revision_sessions",
+    "revision_sessions", "group_sharing_settings",
 )
 RESET_SQL = text("""
-    TRUNCATE TABLE revision_sessions, memorization_entries, user_ayah_progress, quran_pages, quran_juzs,
+    TRUNCATE TABLE group_sharing_settings, revision_sessions, memorization_entries, user_ayah_progress, quran_pages, quran_juzs,
         quran_ayahs, quran_surahs, quran_reference_sources, group_membership_events,
         group_rate_limits, group_invitations, group_memberships, groups, organizations,
         auth_rate_limits, user_sessions, users
@@ -50,8 +51,8 @@ def postgres_engine():
             if not version.startswith("PostgreSQL "):
                 pytest.fail("PostgreSQL integration suite requires PostgreSQL")
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-            if revision != "0007_revision_tracking":
-                pytest.fail("PostgreSQL integration suite requires migration revision 0007_revision_tracking")
+            if revision != "0008_group_sharing":
+                pytest.fail("PostgreSQL integration suite requires migration revision 0008_group_sharing")
             existing_tables = set(connection.scalars(text(
                 "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
             )).all())

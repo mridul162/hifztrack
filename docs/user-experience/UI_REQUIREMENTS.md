@@ -16,6 +16,8 @@ Current MEM-01 page (`/memorization`) is personal and requires an authenticated 
 
 REV-01 page (`/revision`) requires an authenticated session. It records the canonical numeric range, revision type, activity date, time, optional 1–5 self-rating and notes, and shows paginated owner-only history with loading, empty, validation, success, and failure states. Saved revision records are immutable and have no edit, correction, cancellation, or delete actions. Revision never changes current Ayah status.
 
+SHARE-01 provides an owner-facing settings page at `/groups/{group_id}/sharing` with overall visibility and four independent category controls. It explains what each category exposes, loads and saves the authenticated owner's settings, and shows loading, error, and save-success states. Group details link to shared information for ACTIVE members. Shared views display only fields allowed by the backend response; disabled categories and private notes are not rendered. Goal and assessment toggles are stored preferences only while their P1 workflows remain unavailable.
+
 ## MVP screen inventory
 
 Authentication; profile/settings; personal dashboard; Quran Surah/Ayah reference navigation and lookup; Juz/page navigation; memorization tracker/history; revision tracker/history; group list/create/detail; invitations; group membership management; per-group sharing settings; group dashboard and permitted member summary. Full Quran text/advanced search is an extended proposal, not P0.

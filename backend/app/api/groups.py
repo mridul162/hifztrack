@@ -13,7 +13,7 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.groups.rate_limit import consume
 from app.groups.service import (accept_invitation, group_for_update, record_event, require_admin,
-    require_member, revoke_admin_invitations, token_digest)
+    create_membership, require_member, revoke_admin_invitations, token_digest)
 from app.models import Group, GroupInvitation, GroupMembership, GroupMembershipEvent, Organization, User
 from app.schemas.groups import (GroupCreate, GroupRead, GroupUpdate, InvitationAccept,
     InvitationCreate, InvitationCreated, InvitationRead, MemberPage, MemberRead, MemberUpdate,
@@ -45,10 +45,7 @@ def create_group(payload: GroupCreate, db: Session = Depends(get_db), user: User
             lifecycle="ACTIVE")
         db.add(group)
         db.flush()
-        member = GroupMembership(group_id=group.id, user_id=user.id, role="ADMIN", state="ACTIVE",
-            joined_at=datetime.now(timezone.utc))
-        db.add(member)
-        db.flush()
+        member = create_membership(db, group.id, user.id, "ADMIN", "ACTIVE", datetime.now(timezone.utc))
         record_event(db, member, user.id, "JOINED", None, "ACTIVE")
         db.commit()
         db.refresh(group)

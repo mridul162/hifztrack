@@ -2,6 +2,8 @@
 
 ## Status
 
+SHARE-01 is IMPLEMENTED, not VERIFIED. Migration `0008_group_sharing` adds one owner-controlled settings row per membership episode, backfills existing memberships with `SUMMARY` progress and all four categories disabled, and new group-creation/invitation-acceptance flows create settings transactionally. The self-scoped settings routes are `GET/PATCH /groups/{group_id}/sharing/me`; shared member data is read through `GET /groups/{group_id}/members/{membership_id}/shared`. The backend allows only ACTIVE viewers and ACTIVE targets in the same group and filters every response to approved fields. Summary uses 6,236 Ayahs; detailed status includes implicit `NOT_STARTED` from all canonical Ayah coordinates and returns 503 if the reference set is incomplete. Memorization/revision log responses exclude notes and unapproved fields. Goals and assessments have persisted independent settings only; their P1 workflows remain unimplemented. Owner-facing settings and shared-member pages are available in the group UI. Verification: full backend suite, 66 passed and 36 PostgreSQL integration tests skipped because `TEST_POSTGRES_URL` was not configured; frontend TypeScript check and production build passed; migration upgrade to `0008_group_sharing`, existing-membership default backfill, Alembic schema-drift check, and downgrade to base passed against disposable SQLite. PostgreSQL-specific migration and defaults tests remain unverified because no disposable PostgreSQL URL was configured. Frontend interaction states have no automated UI test harness.
+
 F0-A (minimum application foundation) is VERIFIED: Next.js frontend, FastAPI backend, PostgreSQL Compose service, health endpoints, and its initial empty Alembic baseline. AUTH-01 / USER-01 are also VERIFIED as a separate milestone below. The broader Phase 0 checklist remains NOT AUTHORIZED and must not be inferred from either milestone.
 
 Status meanings: `NOT_STARTED` = no implementation; `IN_PROGRESS` = actively being built; `IMPLEMENTED` = code exists, verification pending; `VERIFIED` = acceptance criteria and relevant tests pass.
@@ -56,7 +58,7 @@ Extended proposals beyond original functional requirements include personal acco
 
 ## Open decisions
 
-See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, rationale, options/consequences, and approval status. DEC-007/008/009 (group invitations)/017/020/021 were approved for Phase 2 on 2026-11-23. DEC-004/005 were approved for Phase 3 on 2026-11-23. DEC-006/016/023 sharing policy was approved 2026-11-24 and recorded in ADR-018; SHARE-01 is not implemented by this documentation task. DEC-002 remains conditional under ADR-014; its revised metadata ownership approach and evidence gates are listed above. Other open decisions include assessment effects and related policies.
+See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, rationale, options/consequences, and approval status. DEC-007/008/009 (group invitations)/017/020/021 were approved for Phase 2 on 2026-11-23. DEC-004/005 were approved for Phase 3 on 2026-11-23. DEC-006/016/023 sharing policy was approved 2026-11-24 and recorded in ADR-018; SHARE-01 implementation and verification status are tracked above. DEC-002 remains conditional under ADR-014; its revised metadata ownership approach and evidence gates are listed above. Other open decisions include assessment effects and related policies.
 
 ## Foundation milestone
 

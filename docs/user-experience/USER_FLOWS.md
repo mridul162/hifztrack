@@ -25,6 +25,8 @@ The source MVP dashboard includes total Quran memorized, learning and strong por
 3. Admins create seven-day invitations (one successful use by default), distribute the one-time token link, and may revoke outstanding invitations. The roster shows display name, role, state and membership timestamps, never email.
 4. A member leaves; the LEFT membership episode remains in history and later rejoining creates a new episode. Admins may archive a group; archive revokes invitations and makes the group read-only, while existing members may still leave.
 
+5. Each member opens Sharing settings for their own group membership. A new membership defaults to SUMMARY overall progress with memorization logs, revision logs, goals, and assessments disabled. The owner may change only their own settings. ACTIVE members of the group can open a member's shared view; backend authorization checks both memberships and fields. PENDING, SUSPENDED, and LEFT memberships cannot view shared information. Rejoining starts with fresh defaults.
+
 The source group dashboard includes member count, shared member progress, recent activities, and group statistics. Announcements were P1/Release 2, so the dashboard must not imply they are available in MVP.
 
 ## Future flows

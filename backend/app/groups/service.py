@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models import Group, GroupInvitation, GroupMembership, GroupMembershipEvent, User
+from app.models import Group, GroupInvitation, GroupMembership, GroupMembershipEvent, GroupSharingSettings, User
 
 
 def utcnow() -> datetime:
@@ -47,6 +47,17 @@ def record_event(db: Session, row: GroupMembership, actor_id: UUID, event_type: 
                  previous: str | None = None, new: str | None = None) -> None:
     db.add(GroupMembershipEvent(membership_id=row.id, group_id=row.group_id, actor_id=actor_id,
         event_type=event_type, previous_value=previous, new_value=new))
+
+
+def create_membership(db: Session, group_id: UUID, user_id: UUID, role: str, state: str,
+                      joined_at: datetime | None = None) -> GroupMembership:
+    row = GroupMembership(group_id=group_id, user_id=user_id, role=role, state=state,
+        joined_at=joined_at)
+    db.add(row)
+    db.flush()
+    db.add(GroupSharingSettings(membership_id=row.id))
+    db.flush()
+    return row
 
 
 def revoke_admin_invitations(db: Session, group_id: UUID, user_id: UUID) -> None:
@@ -92,9 +103,7 @@ def accept_invitation(db: Session, token: str, user: User) -> GroupMembership:
         GroupMembership.user_id == user.id, GroupMembership.state.in_(["PENDING", "ACTIVE", "SUSPENDED"])))
     if current:
         raise HTTPException(409, "Membership already exists")
-    row = GroupMembership(group_id=group.id, user_id=user.id, role="MEMBER", state="ACTIVE", joined_at=now)
-    db.add(row)
-    db.flush()
+    row = create_membership(db, group.id, user.id, "MEMBER", "ACTIVE", now)
     record_event(db, row, user.id, "JOINED", None, "ACTIVE")
     invite.used_count += 1
     db.commit()
