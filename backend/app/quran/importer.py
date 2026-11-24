@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.models import QuranAyah, QuranJuz, QuranPage, QuranReferenceSource, QuranSurah
 from app.quran.reference import (
+    EXPECTED_AYAH_COUNT,
+    EXPECTED_SURAH_COUNT,
     SOURCE_CATEGORY,
     SOURCE_NAME,
     SOURCE_RELATIVE_PATH,
@@ -20,6 +22,30 @@ class ImportResult:
     surah_count: int
     ayah_count: int
     already_loaded: bool
+
+
+def _validate_reference_data(data: QuranReferenceData) -> None:
+    expected_surah_numbers = list(range(1, EXPECTED_SURAH_COUNT + 1))
+    if len(data.surahs) != EXPECTED_SURAH_COUNT:
+        raise ValueError("Quran reference data is incomplete or inconsistent")
+
+    if [row.surah_number for row in data.surahs] != expected_surah_numbers or any(
+        row.ayah_count < 1 or row.ayah_count > 286 for row in data.surahs
+    ):
+        raise ValueError("Quran reference data is incomplete or inconsistent")
+
+    expected_ayahs = tuple(
+        (row.surah_number, ayah_number)
+        for row in data.surahs
+        for ayah_number in range(1, row.ayah_count + 1)
+    )
+    if len(expected_ayahs) != EXPECTED_AYAH_COUNT or data.ayahs != expected_ayahs:
+        raise ValueError("Quran reference data is incomplete or inconsistent")
+
+    if len(data.source_sha256) != 64 or any(
+        character not in "0123456789abcdef" for character in data.source_sha256
+    ):
+        raise ValueError("Quran reference data has an invalid source checksum")
 
 
 def import_reference(db: Session, data: QuranReferenceData) -> ImportResult:
@@ -47,6 +73,17 @@ def import_reference(db: Session, data: QuranReferenceData) -> ImportResult:
     pages = db.scalars(select(QuranPage)).all()
     existing_source = db.get(QuranReferenceSource, SOURCE_CATEGORY)
     has_existing = bool(surahs or ayahs or juzs or pages or existing_source)
+
+    if has_existing:
+        try:
+            _validate_reference_data(data)
+        except ValueError as exc:
+            raise ValueError(
+                "Quran reference tables already contain different or partial data; "
+                "refusing to overwrite it"
+            ) from exc
+    else:
+        _validate_reference_data(data)
 
     expected_surahs = [(row.surah_number, row.ayah_count) for row in data.surahs]
     actual_surahs = [(row.surah_number, row.ayah_count) for row in surahs]

@@ -87,6 +87,11 @@ export default function QuranReferencePage() {
             {error}
           </p>
         )}
+        {!loading && !error && surahs.length === 0 && (
+          <p className="mb-5 rounded-lg bg-slate-50 p-4 text-slate-700" role="status">
+            No Surah references are available yet.
+          </p>
+        )}
 
         {!loading && !error && (
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)]">
