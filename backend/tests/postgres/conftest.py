@@ -20,6 +20,8 @@ APPLICATION_TABLES = (
     "quran_pages", "quran_reference_sources", "user_ayah_progress", "memorization_entries",
     "revision_sessions", "group_sharing_settings",
 )
+ALLOWED_DATABASE_NAME = "hifztrack_test"
+ALLOWED_DATABASE_USER = "hifztrack_test_user"
 RESET_SQL = text("""
     TRUNCATE TABLE group_sharing_settings, revision_sessions, memorization_entries, user_ayah_progress, quran_pages, quran_juzs,
         quran_ayahs, quran_surahs, quran_reference_sources, group_membership_events,
@@ -33,7 +35,7 @@ RESET_SQL = text("""
 def postgres_engine():
     database_url = os.environ.get("TEST_POSTGRES_URL")
     if not database_url:
-        pytest.skip("Set TEST_POSTGRES_URL to the disposable HifzTrack verification database")
+        pytest.skip("Set TEST_POSTGRES_URL to the dedicated PostgreSQL test database")
     if os.environ.get("HIFZTRACK_ALLOW_DESTRUCTIVE_PG_TESTS") != "1":
         pytest.fail(
             "PostgreSQL integration tests truncate application tables; set "
@@ -46,8 +48,11 @@ def postgres_engine():
             database_name, database_user, version = connection.execute(text(
                 "SELECT current_database(), current_user, version()"
             )).one()
-            if not database_name.startswith("hifztrack_verify_") or not database_user.startswith("htverify_"):
-                pytest.fail("PostgreSQL tests require the dedicated hifztrack_verify_ database and htverify_ user")
+            if database_name != ALLOWED_DATABASE_NAME or database_user != ALLOWED_DATABASE_USER:
+                pytest.fail(
+                    "PostgreSQL tests require the explicitly allowed database "
+                    f"{ALLOWED_DATABASE_NAME!r} and user {ALLOWED_DATABASE_USER!r}"
+                )
             if not version.startswith("PostgreSQL "):
                 pytest.fail("PostgreSQL integration suite requires PostgreSQL")
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))

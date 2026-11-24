@@ -23,6 +23,11 @@ const labels: Record<Visibility, string> = {
 
 export default function SharingSettingsPage() {
   const { id } = useParams<{ id: string }>();
+  return <SharingSettingsForm key={id} id={id} />;
+}
+
+function SharingSettingsForm({ id }: { id: string }) {
+  const [groupName, setGroupName] = useState("");
   const [settings, setSettings] = useState<SharingSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,8 +36,16 @@ export default function SharingSettingsPage() {
 
   useEffect(() => {
     let mounted = true;
-    void getJson<SharingSettings>(`/groups/${id}/sharing/me`)
-      .then((result) => { if (mounted) setSettings(result); })
+    void Promise.all([
+      getJson<{ name: string }>(`/groups/${id}`),
+      getJson<SharingSettings>(`/groups/${id}/sharing/me`),
+    ])
+      .then(([group, result]) => {
+        if (mounted) {
+          setGroupName(group.name);
+          setSettings(result);
+        }
+      })
       .catch((reason) => { if (mounted) setError((reason as Error).message); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
@@ -70,7 +83,7 @@ export default function SharingSettingsPage() {
 
   return <main className="mx-auto max-w-3xl px-6 py-12">
     <nav className="mb-8 flex gap-5"><Link className="underline" href={`/groups/${id}`}>Back to group</Link><Link className="underline" href="/groups">Your groups</Link></nav>
-    <h1 className="text-3xl font-semibold">Your sharing settings</h1>
+    <h1 className="text-3xl font-semibold">Your sharing settings for {groupName}</h1>
     <p className="mt-2 text-slate-600">These choices apply only to your membership in this group. New memberships start with summary progress shared and all other categories off.</p>
     <form onSubmit={save} className="mt-6 grid gap-5 rounded-xl border bg-white p-6">
       <label className="grid gap-2 font-medium">Overall progress
