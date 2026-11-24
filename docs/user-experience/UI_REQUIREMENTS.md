@@ -14,6 +14,8 @@ Current QURAN-01 browser slice lists Surah numbers/counts, Ayah numbers and the 
 
 Current MEM-01 page (`/memorization`) is personal and requires an authenticated session. It shows numeric Ayah references and current status, supports explicit status changes (with confirmation before STRONG), records canonical Sabaq start/end references, and shows paginated activity history with cancellation and correction actions. Missing progress rows display as NOT_STARTED. Sabaq actions never mutate current Ayah status. Juz/page navigation is deferred until the Quran mappings meet their verification gates.
 
+REV-01 page (`/revision`) requires an authenticated session. It records the canonical numeric range, revision type, activity date, time, optional 1–5 self-rating and notes, and shows paginated owner-only history with loading, empty, validation, success, and failure states. Saved revision records are immutable and have no edit, correction, cancellation, or delete actions. Revision never changes current Ayah status.
+
 ## MVP screen inventory
 
 Authentication; profile/settings; personal dashboard; Quran Surah/Ayah reference navigation and lookup; Juz/page navigation; memorization tracker/history; revision tracker/history; group list/create/detail; invitations; group membership management; per-group sharing settings; group dashboard and permitted member summary. Full Quran text/advanced search is an extended proposal, not P0.

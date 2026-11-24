@@ -11,9 +11,11 @@ from app.models.groups import (
 )
 from app.models.quran import QuranAyah, QuranJuz, QuranPage, QuranReferenceSource, QuranSurah
 from app.models.memorization import MemorizationEntry, UserAyahProgress
+from app.models.revision import RevisionSession
 
 __all__ = [
     "AuthRateLimit", "User", "UserSession", "Organization", "Group", "GroupMembership",
     "GroupInvitation", "GroupMembershipEvent", "GroupRateLimit", "QuranSurah", "QuranAyah",
     "QuranJuz", "QuranPage", "QuranReferenceSource", "MemorizationEntry", "UserAyahProgress",
+    "RevisionSession",
 ]

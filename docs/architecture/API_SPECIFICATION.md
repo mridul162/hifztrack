@@ -26,7 +26,7 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | POST/GET | `/memorization/submissions?limit=&offset=` | Submit Sabaq or read the authenticated user's paginated history |
 | POST | `/memorization/submissions/{entry_id}/cancel` | Cancel an owned submitted entry while preserving history |
 | POST | `/memorization/submissions/{entry_id}/correct` | Atomically cancel an owned entry and add its corrected replacement |
-| GET/POST | `/revision/me`, `/revision` | Read history and submit session |
+| GET/POST | `/revision/me`, `/revision` | List the authenticated user's revision history and submit a session; revision records are immutable after creation (ADR-017). |
 | GET | `/groups/{id}/progress`, `/groups/{id}/analytics` | Permission-filtered group progress and analytics |
 | POST | `/assessments` | Submit authorized mentor assessment |
 
@@ -37,7 +37,7 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | AUTH-01 / USER-01 | register, login, logout, current profile, update profile | Own account only; never expose credentials/secrets. |
 | QURAN-01 | list Surahs/counts, list Ayah numbers, resolve Surah/Ayah references, read source provenance | Read-only numeric references. Juz/page mappings remain gated under DEC-002. No Quran text, translations or full-text search are provided in this slice. |
 | MEM-01 | read/update Ayah status; create/list/cancel/correct Sabaq submissions | Owner-only from the authenticated session; numeric canonical references only; activity and current status are independent; submission history is paginated and preserved. |
-| REV-01 | create/list revision sessions | Owner-only unless group sharing permits. |
+| REV-01 | `POST /revision`, `GET /revision/me?limit=&offset=` | Authenticated owner only in this slice; append-only records, immutable after creation. Group-shared reads wait for SHARE-01. |
 | GROUP-01 / GROUP-02 | create/update group, invite/join/leave, list members, change roles | Membership and role scoped; administrative actions checked server-side. Join requests are an extended proposal. |
 | SHARE-01 | get/update sharing settings per group | Permission owner/actor is unresolved; changes apply to subsequent reads. Never allow group admin to override a learner's privacy setting absent explicit policy. |
 | DASH-01 | personal dashboard, group dashboard, member summary | Group response filtered by member sharing and viewer permission. |

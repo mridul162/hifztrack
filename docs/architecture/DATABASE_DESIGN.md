@@ -22,7 +22,7 @@ This documents the implemented baseline and remaining conceptual entities. The p
 | memorization_entries | User-owned Sabaq submission: UUID, canonical start/end Surah/Ayah coordinates with composite Quran FKs, activity date, optional notes/time spent, SUBMITTED/CANCELLED status, created timestamp. Every submission is preserved as history; corrections cancel the incorrect entry and add a corrected one without changing current Ayah status (DEC-005 / ADR-016). |
 | user_ayah_progress | At most one current row per `(user_id, surah_number, ayah_number)` with NOT_STARTED/LEARNING/MEMORIZED/STRONG status and update timestamp. An absent row is interpreted as NOT_STARTED; writes are explicit learner actions. |
 | ayah_progress_events | Recommended later history of status changes, including actor/reason; source says add eventually, so not an MVP requirement unless required for audit policy. |
-| revision_sessions | User-owned range/type (RECENT/OLD/FULL_JUZ/FULL_QURAN), activity date, time spent, optional 1–5 self-rating, notes, created timestamp. |
+| revision_sessions | Immutable user-owned range/type (RECENT/OLD/FULL_JUZ/FULL_QURAN), activity date, time spent, optional 1–5 self-rating and notes, created timestamp. Composite Quran FKs and checks validate endpoints, canonical range order, type, duration and rating. No cancellation, replacement, or soft-delete fields; DEC-005 applies to Sabaq only (ADR-017). |
 | mentor_assignments / assessments | Optional learner/mentor/group assignment; assessment references memorization entry, mentor, group, PASSED/NEEDS_IMPROVEMENT, feedback and assessed timestamp. |
 | user_goals / group_goals | Personal new-memorization/revision target with value, AYAHS/PAGES/JUZ, date range/active flag; collective group target, not duplicated member goals. Candidate `group_goals` lacks the `goal_type` present in `user_goals`; resolve type/completion semantics under DEC-024 before final schema. |
 | personal_notes | Private-by-default Ayah-linked notes. |
@@ -37,7 +37,7 @@ Original later-stage entities also include announcements, notifications, mentor 
 - Memorization and revision records reference a user, never a group as owner. Group dashboards query the same central user record through membership and sharing policy; they must not create group-owned copies.
 - Group views join a user's allowed sharing settings and active membership before returning details.
 - Ayah-level progress is the source for derived Surah/Juz/page progress.
-- Revision history does not mutate memorization status.
+- Revision history does not mutate memorization status. Revision sessions are append-only and cannot be edited, corrected, cancelled, or deleted by users (ADR-017).
 - Assessment records identify assessor, learner, referenced activity/range, and timestamp without replacing learner entries.
 - Assessment does not automatically mutate learner status. Any approved future status transition is atomic with its assessment (DEC-019).
 - Each membership episode carries one role, allowing the same user to have different roles in different groups. Multiple admins and mentors per group are allowed.

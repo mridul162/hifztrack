@@ -87,3 +87,13 @@ Record approved decisions with ID, date, context, decision, consequences, and st
 **Approved decision:** Each Sabaq submission creates a historical record. Repeated and overlapping submissions remain separate records and never create duplicate current progress rows or inflate unique Ayah counts. Cancellation preserves the record and changes its activity state from SUBMITTED to CANCELLED. A correction cancels the incorrect submission and creates a new submission with corrected information. Cancellation and correction do not change current Ayah status; only an explicit learner status update under ADR-015 changes it. Current status and Sabaq history remain independently queryable.
 
 **Consequences:** Never derive current status from the latest Sabaq submission or automatically reverse progress after cancellation. Personal progress remains centrally user-owned as established by ADR-002.
+
+## ADR-017: Immutable revision session history (REV-01)
+
+**Date:** 2026-11-24. **Status:** Resolved / approved.
+
+**Context:** REV-01 stores a learner's separate Muraja'ah history. DEC-005 and ADR-016 define cancellation and correction for Sabaq submissions only; revision should not inherit those transitions by assumption.
+
+**Approved decision:** Each revision session is a user-owned historical record and becomes immutable after creation. Users cannot edit, correct, cancel, or delete revision sessions. Do not add cancellation status, replacement references, or correction-specific fields to the revision model. Revision activity never changes current Ayah status. DEC-005 remains limited to Sabaq submission records.
+
+**Consequences:** REV-01 provides authenticated create/list operations only. Repeated or overlapping revision ranges are preserved as separate records. Revision-session analytics remain deferred under DEC-022.

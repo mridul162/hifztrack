@@ -12,7 +12,9 @@ These are initial flows for product discussion; exact screens and edge cases are
 
 The current reference browser selects a numeric Surah, then an Ayah number, and shows the selected `surah:ayah` coordinate. It does not display Quran text, translations, Juz or page mappings.
 
-The current `/memorization` workflow requires sign-in, lists numeric Ayahs for the selected Surah with saved status (missing rows display as NOT_STARTED), allows learner status changes with explicit confirmation for STRONG, and records/list/cancels/corrects Sabaq ranges. Activity history is owner-only and paginated. Juz/page navigation is not included in this slice.
+The current `/memorization` workflow requires sign-in, lists numeric Ayahs for the selected Surah with saved status (missing rows display as NOT_STARTED), allows learner status changes with explicit confirmation for STRONG, and records/lists/cancels/corrects Sabaq ranges. Activity history is owner-only and paginated. Juz/page navigation is not included in this slice.
+
+The `/revision` workflow requires sign-in, records a numeric Surah/Ayah range, revision type, activity date, time, optional 1–5 self-rating and notes, and lists the user's paginated history. Revision records cannot be edited, corrected, cancelled, or deleted after creation (ADR-017); revision does not change Ayah status. DEC-005 cancellation/correction rules apply only to Sabaq.
 
 The source MVP dashboard includes total Quran memorized, learning and strong portions, recent memorization/revision activity, and group memberships. Personal goals appear in the suggested dashboard, but goal creation is P1/Release 2; showing goals is conditional on that feature being released.
 

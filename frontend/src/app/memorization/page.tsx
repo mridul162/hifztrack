@@ -157,7 +157,7 @@ export default function MemorizationPage() {
     <main className="min-h-screen px-5 py-8 sm:px-8">
       <div className="mx-auto max-w-5xl">
         <nav className="mb-8 flex flex-wrap gap-5 text-sm">
-          <Link className="underline" href="/">Home</Link><Link className="underline" href="/quran">Quran references</Link><Link className="underline" href="/profile">Profile</Link>
+          <Link className="underline" href="/">Home</Link><Link className="underline" href="/quran">Quran references</Link><Link className="underline" href="/revision">My revision</Link><Link className="underline" href="/profile">Profile</Link>
         </nav>
         <header className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-800">HifzTrack</p>
