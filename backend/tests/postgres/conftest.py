@@ -7,16 +7,21 @@ from sqlalchemy.orm import sessionmaker
 
 EXPECTED_TABLES = {
     "organizations", "groups", "group_memberships", "group_invitations",
-    "group_membership_events", "group_rate_limits",
+    "group_membership_events", "group_rate_limits", "quran_surahs", "quran_ayahs",
+    "quran_juzs", "quran_pages", "quran_reference_sources", "user_ayah_progress",
+    "memorization_entries",
 }
 APPLICATION_TABLES = (
     "organizations", "groups", "group_memberships", "group_invitations",
     "group_membership_events", "group_rate_limits", "auth_rate_limits",
-    "user_sessions", "users",
+    "user_sessions", "users", "quran_surahs", "quran_ayahs", "quran_juzs",
+    "quran_pages", "quran_reference_sources", "user_ayah_progress", "memorization_entries",
 )
 RESET_SQL = text("""
-    TRUNCATE TABLE group_membership_events, group_rate_limits, group_invitations,
-        group_memberships, groups, organizations, auth_rate_limits, user_sessions, users
+    TRUNCATE TABLE memorization_entries, user_ayah_progress, quran_pages, quran_juzs,
+        quran_ayahs, quran_surahs, quran_reference_sources, group_membership_events,
+        group_rate_limits, group_invitations, group_memberships, groups, organizations,
+        auth_rate_limits, user_sessions, users
     RESTART IDENTITY CASCADE
 """)
 
@@ -32,7 +37,7 @@ def postgres_engine():
             "HIFZTRACK_ALLOW_DESTRUCTIVE_PG_TESTS=1 to opt in"
         )
     engine = create_engine(database_url, pool_pre_ping=True, pool_size=12, max_overflow=12,
-        connect_args={"application_name": "hifztrack-phase2-postgres-tests"})
+        connect_args={"application_name": "hifztrack-postgres-tests"})
     try:
         with engine.connect() as connection:
             database_name, database_user, version = connection.execute(text(
@@ -43,8 +48,8 @@ def postgres_engine():
             if not version.startswith("PostgreSQL "):
                 pytest.fail("PostgreSQL integration suite requires PostgreSQL")
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-            if revision != "0003_groups":
-                pytest.fail("PostgreSQL integration suite requires migration revision 0003_groups")
+            if revision != "0006_memorization":
+                pytest.fail("PostgreSQL integration suite requires migration revision 0006_memorization")
             existing_tables = set(connection.scalars(text(
                 "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
             )).all())

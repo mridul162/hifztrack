@@ -55,6 +55,7 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 ## Contract requirements
 
 - Validate all input and return consistent client-safe errors without leaking private resource existence.
+- A concurrent first-time write to the same user's Ayah status is protected by the composite primary key; the losing request receives 409 and may retry. Concurrent updates to an existing row serialize on its row lock. Only one concurrent cancellation/correction of a submission succeeds; later attempts receive 409.
 - Apply authorization before retrieving or serializing sensitive fields.
 - Paginate potentially unbounded activity and group member collections.
 - Use stable identifiers and explicit timestamps/timezone semantics once selected.
