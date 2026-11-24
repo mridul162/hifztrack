@@ -17,7 +17,7 @@
 ## Privacy requirements
 
 - Personal progress remains user-owned.
-- Sharing defaults to private/limited until the exact default matrix is approved.
+- Sharing uses the owner-approved membership-specific defaults and field matrix in DEC-006/016/023 and ADR-018. The backend enforces the owner's settings for every request; group roles cannot override them, and only ACTIVE memberships can access enabled shared fields.
 - Leaving a group revokes subsequent access.
 - Mentor assignment does not override learner sharing/consent.
 - AI, audio, messaging integrations, and exports require explicit data-use and retention decisions before release.

@@ -30,6 +30,7 @@ No Redis is needed initially. Add a background worker only when scheduled notifi
 
 - Personal progress ownership and group-specific sharing are foundational.
 - A single user-owned memorization record is the source for all group views; group membership creates scoped access, not duplicate progress data.
+- Group view authorization is backend-enforced per membership episode. Only the owner changes that episode's sharing settings; ADMIN/MENTOR role does not override privacy. All ACTIVE members are eligible readers of enabled fields, and other membership states are denied. A rejoin creates fresh settings with approved defaults; personal records remain user-owned and are never copied into groups (DEC-006/016/023; ADR-018).
 - Surah/Ayah are canonical; Juz and Mushaf page references are derived from canonical mappings.
 - Separate current progress state from historical memorization and revision activity.
 - Canonical Quran reference data is separate from user activity.

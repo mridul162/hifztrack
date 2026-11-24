@@ -97,3 +97,13 @@ Record approved decisions with ID, date, context, decision, consequences, and st
 **Approved decision:** Each revision session is a user-owned historical record and becomes immutable after creation. Users cannot edit, correct, cancel, or delete revision sessions. Do not add cancellation status, replacement references, or correction-specific fields to the revision model. Revision activity never changes current Ayah status. DEC-005 remains limited to Sabaq submission records.
 
 **Consequences:** REV-01 provides authenticated create/list operations only. Repeated or overlapping revision ranges are preserved as separate records. Revision-session analytics remain deferred under DEC-022.
+
+## ADR-018: Group sharing policy (DEC-006, DEC-016, DEC-023)
+
+**Date:** 2026-11-24. **Status:** Resolved / approved by the product owner for SHARE-01 documentation.
+
+**Context:** Each user owns one personal memorization/revision history but may share different permitted views with different groups. Group roles and membership episodes must not widen that user's privacy choices.
+
+**Approved decision:** Each new membership episode has its own sharing settings. Defaults are overall progress `SUMMARY`, with memorization logs, revision logs, goals, and assessments disabled. Only the data owner may change the settings for their own membership; ADMIN and MENTOR roles do not grant an override. Overall progress is represented as `PRIVATE`, `SUMMARY`, or `DETAILED`; the other four categories have independent Boolean controls. Each category is independent and enabling one does not enable another. Permitted fields, audience, and effective behavior are specified in the business rules and API specification.
+
+**Consequences:** Backend authorization and response filtering must enforce the settings on every subsequent request. Shared data remains user-owned and is queried through the relevant membership; no group-owned copies are created. Leaving ends future access through that episode. Rejoining creates a new episode with defaults rather than restoring prior settings; historical membership records remain preserved. This decision records policy only and does not mark SHARE-01 implemented.

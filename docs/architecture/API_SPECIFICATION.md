@@ -16,7 +16,7 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | POST | `/invitations/accept` | Accept a valid invitation as authenticated user; create ACTIVE MEMBER episode |
 | PATCH | `/groups/{id}/members/{membership_id}` | Admin update a member's role/state; last-active-admin invariant enforced |
 | POST | `/groups/{id}/leave` | Leave own active membership; preserve LEFT episode |
-| PATCH | `/groups/{id}/members/{user_id}/sharing` | Original path suggestion; actor/ownership ambiguity is tracked as DEC-016 |
+| GET/PATCH | Authenticated owner's sharing settings for a group membership (route shape TBD) | Owner only; role does not grant an override. Settings apply only to that membership episode; backend enforces values on each subsequent read (DEC-006/016/023; ADR-018). |
 | GET | `/quran/surahs` | List Surah numbers and Ayah counts; returns 503 until a complete reference import is available |
 | GET | `/quran/surahs/{surah_number}/ayahs` | List canonical Ayah numbers for one Surah |
 | GET | `/quran/ayahs/{surah_number}/{ayah_number}` | Resolve the stable Surah/Ayah coordinate |
@@ -39,7 +39,7 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | MEM-01 | read/update Ayah status; create/list/cancel/correct Sabaq submissions | Owner-only from the authenticated session; numeric canonical references only; activity and current status are independent; submission history is paginated and preserved. |
 | REV-01 | `POST /revision`, `GET /revision/me?limit=&offset=` | Authenticated owner only in this slice; append-only records, immutable after creation. Group-shared reads wait for SHARE-01. |
 | GROUP-01 / GROUP-02 | create/update group, invite/join/leave, list members, change roles | Membership and role scoped; administrative actions checked server-side. Join requests are an extended proposal. |
-| SHARE-01 | get/update sharing settings per group | Permission owner/actor is unresolved; changes apply to subsequent reads. Never allow group admin to override a learner's privacy setting absent explicit policy. |
+| SHARE-01 | get/update the authenticated owner's settings for one group membership | Only the owner may change their own settings; ADMIN and MENTOR roles cannot change another member's settings. ACTIVE group members of any role can read only the fields enabled by the owner's settings. PENDING, SUSPENDED, and LEFT memberships cannot access shared data. Filter in backend before serialization; frontend hiding is not authorization. |
 | DASH-01 | personal dashboard, group dashboard, member summary | Group response filtered by member sharing and viewer permission. |
 | MENTOR-01/02 | assignment and assessment resources (Release 2) | Assigned scope, learner consent, and audit required. |
 
@@ -62,6 +62,9 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 - Avoid APIs that accept a group ID as ownership for personal progress.
 - Personal progress endpoints operate on the authenticated user's one central record. Group APIs return permission-filtered views of that same record, never group-specific duplicates.
 - Any group/mentor route resolves the caller's role for that particular membership; a user's role in one group grants no authority in another.
+- Sharing settings are resolved for the specific membership episode. Overall progress is `PRIVATE`, `SUMMARY` (total memorized Ayahs and percentage of 6,236 only), or `DETAILED` (Surah/Ayah identifiers and current Ayah status only). Independent Boolean controls govern memorization logs, revision logs, goals, and assessments. All default false; overall progress defaults `SUMMARY` for each new episode.
+- Only the owner may update their own settings. Active membership, not role, determines audience: all ACTIVE members can access enabled fields; PENDING, SUSPENDED, and LEFT members cannot. Changes govern eligible historical and future records and apply to subsequent requests. An old episode's settings are not restored on rejoin.
+- Sharing response fields follow `docs/04_BUSINESS_RULES.md`; private notes are excluded. Sharing does not grant edit/delete permission over personal records. Already viewed, downloaded, or copied data cannot be withdrawn retroactively.
 - Document idempotency and conflict behavior for activity updates and future offline sync.
 - Support pagination for member lists and activity history, filters for dates/Surahs/statuses, consistent error responses, and response schemas that do not expose database models directly.
 

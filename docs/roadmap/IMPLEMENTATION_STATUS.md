@@ -31,7 +31,7 @@ Reviewed `docs/source/original_specification.md` and `docs/source/original_speci
 | FR-01/02/05/11 | Covered in requirements and feature catalog. |
 | FR-03/04 | Features present; invitation token behavior captured; group deletion/archival and rejoin details remain partial. |
 | FR-06/07/08/09 | Counts, status vocabulary, session fields, range validation and progress denominator captured. DEC-002 is conditional; DEC-004/005 are approved. Full-text search is separate extended scope. |
-| FR-10 | Five sharing categories and private/summary default recommendation captured; API actor/ownership ambiguity remains. |
+| FR-10 | SHARE-01 policy is documented and owner-approved under DEC-006/016/023 and ADR-018; SHARE-01 remains NOT_STARTED. |
 | FR-12 | P0 dashboard screen content captured; group statistics are limited to current-state/basic summaries. Goals/announcements are conditional because they are P1. |
 | FR-13/14/15 | Corrected to P1/Release 2; target types/units, assessment result model and notification/announcement lifecycle captured; schedule cadence, status effects, delivery preferences remain open. |
 | FR-16/17 | Historical reports/analytics mapped to P1 with distinct group metrics; progress-report export mapped to P2. Exact date windows, export fields and format remain incomplete. |
@@ -43,12 +43,12 @@ Extended proposals beyond original functional requirements include personal acco
 
 ## Source ambiguities and documentation corrections
 
-- Source PATCH path targets another member's sharing settings although product intent gives each owner control. Do not grant group-admin override without explicit approval.
+- Source API candidate path suggests targeting another member's sharing settings; ADR-018 resolves control to the authenticated data owner. Final endpoint shape remains for implementation design.
 - Source P0 dashboards mention personal goals and announcements although FR-13/FR-15 are P1. The UI docs make those panels conditional; do not imply P1 functionality exists in MVP.
 - `memorization_entries` are preserved historical activity; DEC-005 defines cancellation and correction without changing current Ayah status.
 - Phase 2 resolves membership episodes: at most one PENDING/ACTIVE/SUSPENDED row per `(group_id,user_id)` using a partial unique index; LEFT rows are retained and excluded so rejoin creates a new episode.
 - Assessments are separate records and do not automatically change learner status. Whether an explicit status-transition workflow may ever be permitted remains DEC-019; if approved, it must be transactional.
-- Sharing booleans do not specify how summary and detailed overall-progress views are encoded; DEC-023 keeps the representation open.
+- DEC-006/016/023 sharing policies are resolved in ADR-018; implementation and acceptance tests remain outstanding for SHARE-01.
 - `group_goals` lacks the `goal_type` available in `user_goals`; type and completion calculations remain open under DEC-024.
 - Full Quran text/advanced search is not in the original P0 reference-navigation requirement; it remains an extended proposal.
 - P2 progress-report export is original. Personal account-data export and exact CSV/PDF details are extended proposals.
@@ -56,7 +56,7 @@ Extended proposals beyond original functional requirements include personal acco
 
 ## Open decisions
 
-See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, rationale, options/consequences, and approval status. DEC-007/008/009 (group invitations)/017/020/021 were approved for Phase 2 on 2026-11-23. DEC-004/005 were approved for Phase 3 on 2026-11-23. DEC-002 remains conditional under ADR-014; its revised metadata ownership approach and evidence gates are listed above. Other open decisions include sharing actor/default, assessment effects, and related policies.
+See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, rationale, options/consequences, and approval status. DEC-007/008/009 (group invitations)/017/020/021 were approved for Phase 2 on 2026-11-23. DEC-004/005 were approved for Phase 3 on 2026-11-23. DEC-006/016/023 sharing policy was approved 2026-11-24 and recorded in ADR-018; SHARE-01 is not implemented by this documentation task. DEC-002 remains conditional under ADR-014; its revised metadata ownership approach and evidence gates are listed above. Other open decisions include assessment effects and related policies.
 
 ## Foundation milestone
 
