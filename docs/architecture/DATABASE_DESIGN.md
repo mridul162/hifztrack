@@ -1,6 +1,6 @@
 # Database design
 
-This documents the implemented baseline and remaining conceptual entities. The project uses PostgreSQL, SQLAlchemy 2.0, UUID primary keys, and Alembic migrations. AUTH-01 is in migration `0002_auth`; GROUP-01/GROUP-02 schema is in `0003_groups`. DEC-002 conditionally approves the Quran source/convention; its provenance, notice, metadata-license, and page-boundary verification gates remain required before Quran reference integration.
+This documents the implemented baseline and remaining conceptual entities. The project uses PostgreSQL, SQLAlchemy 2.0, UUID primary keys, and Alembic migrations. AUTH-01 is in migration `0002_auth`; GROUP-01/GROUP-02 schema is in `0003_groups`; the Quran reference schema extends in `0004_quran_reference` and `0005_quran_reference_sources`. DEC-002 remains conditional: verify Arabic provenance/license/attribution before public release; document sources and usage conditions for each further metadata category; verify the exact Madani edition and all page boundaries before adding page mappings. The Tanzil metadata XML is not an application dependency.
 
 ## Candidate entities
 
@@ -16,8 +16,9 @@ This documents the implemented baseline and remaining conceptual entities. The p
 | group_membership_events | Append-only role/state/join/leave event record with membership/group/actor, prior/new value and timestamp; no unrelated personal fields. |
 | group_rate_limits | PostgreSQL fixed-window counters with HMAC digests, UTC window start, attempts and expiry; separate from AUTH-01 counters. |
 | group_sharing_settings | Unique membership FK; five controls for overall progress, memorization logs, revision logs, goals, assessments; updated timestamp; privacy-conscious default. How summary versus detailed overall progress maps to these controls is unresolved (DEC-023); no visibility-level schema is selected. |
-| quran_surahs / quran_ayahs | 114 Surahs; stable Quran-wide ID for 6,236 Ayahs, Surah/local Ayah number, Juz and Madani page number; unique `(surah_id,ayah_number)` and validated canonical import. |
-| quran_juz / quran_pages / mappings | Canonical mappings from references to Ayahs; data import provenance required. |
+| quran_surahs / quran_ayahs | Created by `0004_quran_reference`; `0005_quran_reference_sources` adds each Surah's Ayah count. Surah number is the Surah key; `(surah_number, ayah_number)` is the stable Ayah key. The importer stores numeric coordinates/counts only, never Arabic text or Surah names. |
+| quran_reference_sources | One provenance record per imported metadata category: source name/version/path/hash/link, usage conditions and structural verification method. The first supported category is `SURAH_AYAH_ORDER`; it is read from the Tanzil Arabic source file, never the Tanzil metadata XML. |
+| quran_juzs / quran_pages | Empty mapping tables hold each Juz/page number and its start `(surah_number, ayah_number)` coordinate; composite FKs require an existing canonical Ayah. Mapping rows remain unpopulated until each source is established; Madani pages additionally require exact-edition identification and independent boundary verification under DEC-002. |
 | memorization_entries | User-owned Sabaq submission: UUID, start/end Ayah IDs, activity date, optional notes/time spent, SUBMITTED/CANCELLED status, created timestamp. Every submission is preserved as history; corrections cancel the incorrect entry and add a corrected one without changing current Ayah status (DEC-005 / ADR-016). |
 | user_ayah_progress | Exactly one current row per `(user_id, ayah_id)` with NOT_STARTED/LEARNING/MEMORIZED/STRONG status and update timestamp. |
 | ayah_progress_events | Recommended later history of status changes, including actor/reason; source says add eventually, so not an MVP requirement unless required for audit policy. |
@@ -50,4 +51,4 @@ Original later-stage entities also include announcements, notifications, mentor 
 
 ## Open schema decisions
 
-Open schema details include date/time policy, Quran dataset/version/license, range representation, sharing visibility representation (DEC-023) and API actor, group goal type/completion (DEC-024), and broader audit retention. Organization inheritance is not used for authorization. Membership episode, group lifecycle, invitation policy, and minimal organization support are resolved in DEC-007/008/009/017/020/021.
+Open schema details include date/time policy, range representation, sharing visibility representation (DEC-023) and API actor, group goal type/completion (DEC-024), and broader audit retention. DEC-002 conditionally approves the Quran source/convention; release and further-category evidence gates remain as recorded in ADR-014. Organization inheritance is not used for authorization. Membership episode, group lifecycle, invitation policy, and minimal organization support are resolved in DEC-007/008/009/017/020/021.

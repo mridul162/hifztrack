@@ -10,6 +10,8 @@ These are initial flows for product discussion; exact screens and edge cases are
 4. Record Muraja'ah separately with revision type, notes, and self-assessment.
 5. Review personal dashboard and basic statistics.
 
+The current reference browser selects a numeric Surah, then an Ayah number, and shows the selected `surah:ayah` coordinate. It does not display Quran text, translations, Juz or page mappings.
+
 The source MVP dashboard includes total Quran memorized, learning and strong portions, recent memorization/revision activity, and group memberships. Personal goals appear in the suggested dashboard, but goal creation is P1/Release 2; showing goals is conditional on that feature being released.
 
 ## Group participation (MVP)

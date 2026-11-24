@@ -10,6 +10,8 @@
 - Provide loading, empty, validation, success, and failure states for all forms and lists.
 - Use accessible labels, keyboard navigation, visible focus, and sufficient contrast.
 
+Current QURAN-01 browser slice lists Surah numbers/counts, Ayah numbers and the selected coordinate. It displays no Quran text or translations; Juz/page context is omitted until its source and verification gates are satisfied.
+
 ## MVP screen inventory
 
 Authentication; profile/settings; personal dashboard; Quran Surah/Ayah reference navigation and lookup; Juz/page navigation; memorization tracker/history; revision tracker/history; group list/create/detail; invitations; group membership management; per-group sharing settings; group dashboard and permitted member summary. Full Quran text/advanced search is an extended proposal, not P0.

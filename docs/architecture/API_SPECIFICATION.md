@@ -17,7 +17,10 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | PATCH | `/groups/{id}/members/{membership_id}` | Admin update a member's role/state; last-active-admin invariant enforced |
 | POST | `/groups/{id}/leave` | Leave own active membership; preserve LEFT episode |
 | PATCH | `/groups/{id}/members/{user_id}/sharing` | Original path suggestion; actor/ownership ambiguity is tracked as DEC-016 |
-| GET | `/quran/surahs`, `/quran/ayahs` | Browse Quran reference |
+| GET | `/quran/surahs` | List Surah numbers and Ayah counts; returns 503 until a complete reference import is available |
+| GET | `/quran/surahs/{surah_number}/ayahs` | List canonical Ayah numbers for one Surah |
+| GET | `/quran/ayahs/{surah_number}/{ayah_number}` | Resolve the stable Surah/Ayah coordinate |
+| GET | `/quran/reference-source` | Read provenance, verification method and usage conditions for imported reference categories |
 | POST | `/memorization` | Submit Sabaq |
 | GET | `/memorization/me`, `/memorization/me/history` | Current progress and history |
 | GET/POST | `/revision/me`, `/revision` | Read history and submit session |
@@ -29,7 +32,7 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | Feature | Candidate operations | Scope rules |
 |---|---|---|
 | AUTH-01 / USER-01 | register, login, logout, current profile, update profile | Own account only; never expose credentials/secrets. |
-| QURAN-01 | list Surahs, resolve Surah/Ayah references, browse Juz/page mappings | Read-only canonical data. Full text/advanced search is an extended proposal, not P0. |
+| QURAN-01 | list Surahs/counts, list Ayah numbers, resolve Surah/Ayah references, read source provenance | Read-only numeric references. Juz/page mappings remain gated under DEC-002. No Quran text, translations or full-text search are provided in this slice. |
 | MEM-01 | create/list/update memorization entries; read progress | Owner-only for personal detail; preserve history. |
 | REV-01 | create/list revision sessions | Owner-only unless group sharing permits. |
 | GROUP-01 / GROUP-02 | create/update group, invite/join/leave, list members, change roles | Membership and role scoped; administrative actions checked server-side. Join requests are an extended proposal. |
