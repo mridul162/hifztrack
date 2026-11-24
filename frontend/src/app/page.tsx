@@ -20,7 +20,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
       <section className="w-full max-w-xl rounded-2xl border border-emerald-950/10 bg-white p-8 shadow-sm sm:p-12">
-        <nav className="mb-8 flex flex-wrap gap-5"><Link className="underline" href="/login">Sign in</Link><Link className="underline" href="/register">Register</Link><Link className="underline" href="/profile">Profile</Link><Link className="underline" href="/groups">Groups</Link><Link className="underline" href="/quran">Quran references</Link></nav>
+        <nav className="mb-8 flex flex-wrap gap-5"><Link className="underline" href="/login">Sign in</Link><Link className="underline" href="/register">Register</Link><Link className="underline" href="/profile">Profile</Link><Link className="underline" href="/groups">Groups</Link><Link className="underline" href="/quran">Quran references</Link><Link className="underline" href="/memorization">My memorization</Link></nav>
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-800">
           HifzTrack
         </p>

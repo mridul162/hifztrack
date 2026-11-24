@@ -24,6 +24,7 @@
 ## History and assessment
 
 15. Preserve every Sabaq submission as historical activity separately from one current status per user/Ayah. Repeated and overlapping submissions remain separate history and do not inflate unique Ayah progress. Cancellation changes SUBMITTED to CANCELLED without deleting history. Correct an erroneous submission by cancelling it and creating a corrected submission. Cancellation/correction does not change current Ayah status; current status and Sabaq history remain independently queryable (DEC-005; ADR-016).
+   A missing saved progress row means NOT_STARTED. Progress writes are learner-controlled per Ayah; STRONG requires explicit confirmation, and transitions (including regressions) do not depend on Sabaq activity.
 16. Revision sessions remain separate history and do not change memorization status automatically.
 17. Mentor assessments are independent from learner self-reported status; a learner may be assessed by mentors in different groups. Access is restricted to authorized members of the associated group.
 18. Source assessment results are PASSED or NEEDS_IMPROVEMENT. Assessment is a separate record and does not automatically change learner Ayah status. Any future status-transition workflow needs an explicit approved rule; if approved, assessment and status change commit in one transaction.

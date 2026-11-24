@@ -11,7 +11,7 @@ The original specification proposes the following sequence. F0-A is an owner-app
 | 0 | Development foundation: backend/frontend scaffolding, Compose/PostgreSQL, SQLAlchemy/Alembic, health check, basic UI and environment docs | F0-A approved as a limited foundation slice; broader Phase 0 acceptance remains unauthorized |
 | 1 | Authentication and profile | Sessions, privacy and auth tests; VERIFIED |
 | 2 | Groups and memberships | Group CRUD, invitation, many-to-many roles/admins |
-| 3 | Quran reference and memorization | Canonical data, submissions, Ayah status and calculations |
+| 3 | Quran reference and memorization | QURAN-01 numeric references are IN_PROGRESS; MEM-01 personal Ayah status and Sabaq activity are IN_PROGRESS. REV-01 remains in Phase 4. |
 | 4 | Revision tracking | P0 recording and history; detailed revision analytics are P1 / Release 2 (FR-16, DEC-022) |
 | 5 | Sharing and authorization | Per-membership visibility and negative security tests |
 | 6 | Mentor and dashboards | Optional assessment, personal/group dashboards and basic analytics |

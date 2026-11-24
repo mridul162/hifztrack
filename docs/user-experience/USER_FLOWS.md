@@ -6,11 +6,13 @@ These are initial flows for product discussion; exact screens and edge cases are
 
 1. Register or sign in, then review profile and privacy settings.
 2. Select a Surah/Ayah or look up a reference using canonical navigation. Full-text/advanced search is an extended proposal, not MVP scope.
-3. Record a Sabaq range and its memorization status; review personal progress.
+3. Record a Sabaq range and review personal progress. Set each Ayah's current status separately; Sabaq activity does not change it.
 4. Record Muraja'ah separately with revision type, notes, and self-assessment.
 5. Review personal dashboard and basic statistics.
 
 The current reference browser selects a numeric Surah, then an Ayah number, and shows the selected `surah:ayah` coordinate. It does not display Quran text, translations, Juz or page mappings.
+
+The current `/memorization` workflow requires sign-in, lists numeric Ayahs for the selected Surah with saved status (missing rows display as NOT_STARTED), allows learner status changes with explicit confirmation for STRONG, and records/list/cancels/corrects Sabaq ranges. Activity history is owner-only and paginated. Juz/page navigation is not included in this slice.
 
 The source MVP dashboard includes total Quran memorized, learning and strong portions, recent memorization/revision activity, and group memberships. Personal goals appear in the suggested dashboard, but goal creation is P1/Release 2; showing goals is conditional on that feature being released.
 

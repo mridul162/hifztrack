@@ -21,8 +21,11 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | GET | `/quran/surahs/{surah_number}/ayahs` | List canonical Ayah numbers for one Surah |
 | GET | `/quran/ayahs/{surah_number}/{ayah_number}` | Resolve the stable Surah/Ayah coordinate |
 | GET | `/quran/reference-source` | Read provenance, verification method and usage conditions for imported reference categories |
-| POST | `/memorization` | Submit Sabaq |
-| GET | `/memorization/me`, `/memorization/me/history` | Current progress and history |
+| GET | `/memorization/progress?surah_number=` | Read the authenticated user's saved Ayah statuses (omitted rows mean NOT_STARTED) |
+| PUT | `/memorization/progress/{surah_number}/{ayah_number}` | Explicitly set one owned Ayah status; STRONG requires confirmation |
+| POST/GET | `/memorization/submissions?limit=&offset=` | Submit Sabaq or read the authenticated user's paginated history |
+| POST | `/memorization/submissions/{entry_id}/cancel` | Cancel an owned submitted entry while preserving history |
+| POST | `/memorization/submissions/{entry_id}/correct` | Atomically cancel an owned entry and add its corrected replacement |
 | GET/POST | `/revision/me`, `/revision` | Read history and submit session |
 | GET | `/groups/{id}/progress`, `/groups/{id}/analytics` | Permission-filtered group progress and analytics |
 | POST | `/assessments` | Submit authorized mentor assessment |
@@ -33,7 +36,7 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 |---|---|---|
 | AUTH-01 / USER-01 | register, login, logout, current profile, update profile | Own account only; never expose credentials/secrets. |
 | QURAN-01 | list Surahs/counts, list Ayah numbers, resolve Surah/Ayah references, read source provenance | Read-only numeric references. Juz/page mappings remain gated under DEC-002. No Quran text, translations or full-text search are provided in this slice. |
-| MEM-01 | create/list/update memorization entries; read progress | Owner-only for personal detail; preserve history. |
+| MEM-01 | read/update Ayah status; create/list/cancel/correct Sabaq submissions | Owner-only from the authenticated session; numeric canonical references only; activity and current status are independent; submission history is paginated and preserved. |
 | REV-01 | create/list revision sessions | Owner-only unless group sharing permits. |
 | GROUP-01 / GROUP-02 | create/update group, invite/join/leave, list members, change roles | Membership and role scoped; administrative actions checked server-side. Join requests are an extended proposal. |
 | SHARE-01 | get/update sharing settings per group | Permission owner/actor is unresolved; changes apply to subsequent reads. Never allow group admin to override a learner's privacy setting absent explicit policy. |
