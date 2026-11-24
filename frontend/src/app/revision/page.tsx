@@ -58,6 +58,7 @@ export default function RevisionPage() {
   const [saving, setSaving] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -98,6 +99,7 @@ export default function RevisionPage() {
     event.preventDefault();
     setSaving(true);
     setError(null);
+    setHistoryError(null);
     setNotice(null);
     const start = [form.start_surah_number, form.start_ayah_number];
     const end = [form.end_surah_number, form.end_ayah_number];
@@ -108,9 +110,14 @@ export default function RevisionPage() {
     }
     try {
       await mutate("/revision", "POST", form);
-      await reloadHistory();
       setNotice("Revision session recorded in your history.");
       setForm(initialForm());
+      try {
+        await reloadHistory();
+      } catch (reason) {
+        const detail = reason instanceof Error ? reason.message : "Could not refresh revision history.";
+        setHistoryError(`The revision was recorded, but history could not be refreshed: ${detail}`);
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not record revision session.");
     } finally { setSaving(false); }
@@ -152,6 +159,11 @@ export default function RevisionPage() {
             <p>{error}</p>
             {error.includes("Sign in") && <Link className="mt-2 inline-block underline" href="/login">Sign in</Link>}
           </div>
+        )}
+        {historyError && (
+          <p className="mb-5 rounded-lg bg-amber-50 p-4 text-amber-950" role="alert">
+            {historyError}
+          </p>
         )}
         {notice && <p className="mb-5 rounded-lg bg-emerald-50 p-4 text-emerald-950" role="status">{notice}</p>}
         {!loading && !error && surahs.length === 0 && (

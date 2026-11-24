@@ -1,6 +1,6 @@
 # Feature catalog
 
-Status convention: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `VERIFIED`. AUTH-01, USER-01, GROUP-01, GROUP-02, and MEM-01 are `VERIFIED`; QURAN-01 remains `IN_PROGRESS`; REV-01 is `IMPLEMENTED`, with frontend interaction review still pending. QURAN-01 has numeric Surah/Ayah import, read-only APIs and a browser view, while Juz/page mappings and release evidence gates remain incomplete. MEM-01's personal Ayah status and separate Sabaq history APIs, schema, migration, learner page, SQLite tests, and PostgreSQL 18.6 integration tests are verified; see implementation status for migration and concurrency evidence. REV-01 provides owner-only append-and-list revision history; DEC-005 remains Sabaq-specific and revision records are immutable under ADR-017. Other feature statuses remain as listed. Original source priorities map to P0=MVP, P1=next functional release, P2=later enhancement. Features carried forward from the earlier initialization brief but absent as requirements in both originals are marked “Extended proposal.” Rows include dependencies and minimum acceptance criteria; required tests should include positive behavior, validation, and negative authorization cases where data access is involved.
+Status convention: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `VERIFIED`. AUTH-01, USER-01, GROUP-01, GROUP-02, MEM-01, and REV-01 are `VERIFIED`; QURAN-01 remains `IN_PROGRESS`. QURAN-01 has numeric Surah/Ayah import, read-only APIs and a browser view, while Juz/page mappings and release evidence gates remain incomplete. MEM-01's personal Ayah status and separate Sabaq history APIs, schema, migration, learner page, SQLite tests, and PostgreSQL 18.6 integration tests are verified; see implementation status for migration and concurrency evidence. REV-01 provides owner-only append-and-list revision history; DEC-005 remains Sabaq-specific and revision records are immutable under ADR-017. Other feature statuses remain as listed. Original source priorities map to P0=MVP, P1=next functional release, P2=later enhancement. Features carried forward from the earlier initialization brief but absent as requirements in both originals are marked “Extended proposal.” Rows include dependencies and minimum acceptance criteria; required tests should include positive behavior, validation, and negative authorization cases where data access is involved.
 
 | ID | Feature | Priority / release | Dependencies | Minimum acceptance criteria |
 |---|---|---|---|---|
@@ -46,7 +46,7 @@ For each feature implementation, expand the row into objective, user stories, fu
 | QURAN-01 | PR-QURAN-01 | P0 | IN_PROGRESS (numeric Surah/Ayah slice implemented; Juz/page and release gates remain) |
 | QURAN-SEARCH-01 | No original P0 requirement; extended proposal | TBD | NOT_STARTED |
 | MEM-01 | PR-MEM-01, PR-HIST-01, PR-SEC-01 | P0 | VERIFIED (see implementation status) |
-| REV-01 | PR-REV-01, PR-HIST-01 | P0 | IMPLEMENTED (frontend interaction review pending) |
+| REV-01 | PR-REV-01, PR-HIST-01 | P0 | VERIFIED (see implementation status) |
 | GROUP-01, GROUP-02 | PR-GROUP-01 | P0 | VERIFIED (see implementation status) |
 | SHARE-01 | PR-SHARE-01, PR-SEC-01 | P0 | NOT_STARTED |
 | DASH-01 | PR-DASH-01, PR-SEC-01 | P0 | NOT_STARTED |
