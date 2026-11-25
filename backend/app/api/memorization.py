@@ -7,8 +7,9 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models import User
-from app.models.memorization import MemorizationEntry, UserAyahProgress
+from app.models.memorization import UserAyahProgress
 from app.memorization.service import cancel, correct, set_progress, submit
+from app.memorization.service import list_submissions as list_user_submissions
 from app.schemas.memorization import (
     MemorizationEntryCreate,
     MemorizationEntryRead,
@@ -62,17 +63,7 @@ def list_submissions(
     offset: int = Query(default=0, ge=0),
     user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
-    return db.scalars(
-        select(MemorizationEntry)
-        .where(MemorizationEntry.user_id == user.id)
-        .order_by(
-            MemorizationEntry.activity_date.desc(),
-            MemorizationEntry.created_at.desc(),
-            MemorizationEntry.id.desc(),
-        )
-        .limit(limit)
-        .offset(offset)
-    ).all()
+    return list_user_submissions(db, user.id, limit, offset)
 
 
 @router.post("/submissions/{entry_id}/cancel", response_model=MemorizationEntryRead)

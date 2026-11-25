@@ -8,6 +8,7 @@ from app.api.quran import router as quran_router
 from app.api.memorization import router as memorization_router
 from app.api.revision import router as revision_router
 from app.api.sharing import router as sharing_router
+from app.api.dashboard import router as dashboard_router
 from app.auth.csrf import CsrfProtectionMiddleware
 from app.core.config import settings
 
@@ -27,3 +28,4 @@ app.include_router(quran_router)
 app.include_router(memorization_router)
 app.include_router(revision_router)
 app.include_router(sharing_router)
+app.include_router(dashboard_router)

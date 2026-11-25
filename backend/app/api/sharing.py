@@ -2,12 +2,17 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.groups.service import group_for_update, require_member
+from app.memorization.progress import (
+    completion_percentage,
+    count_memorized_ayahs,
+    require_complete_ayah_references,
+)
 from app.models import (
     GroupMembership,
     GroupSharingSettings,
@@ -29,7 +34,6 @@ from app.schemas.sharing import (
 
 
 router = APIRouter(tags=["group-sharing"])
-CANONICAL_AYAH_TOTAL = 6236
 
 
 def _owner_membership(
@@ -125,22 +129,13 @@ def get_shared_member_data(
     response = SharedMemberData(overall_progress_visibility=settings.overall_progress_visibility)
 
     if settings.overall_progress_visibility == "SUMMARY":
-        total = db.scalar(
-            select(func.count())
-            .select_from(UserAyahProgress)
-            .where(
-                UserAyahProgress.user_id == owner_membership.user_id,
-                UserAyahProgress.memorization_status.in_(["MEMORIZED", "STRONG"]),
-            )
-        ) or 0
+        total = count_memorized_ayahs(db, owner_membership.user_id)
         response.progress_summary = SharedProgressSummary(
             total_memorized_ayahs=total,
-            completion_percentage=round(total * 100 / CANONICAL_AYAH_TOTAL, 2),
+            completion_percentage=completion_percentage(total),
         )
     elif settings.overall_progress_visibility == "DETAILED":
-        ayah_count = db.scalar(select(func.count()).select_from(QuranAyah)) or 0
-        if ayah_count != CANONICAL_AYAH_TOTAL:
-            raise HTTPException(503, "Canonical Quran references are incomplete")
+        require_complete_ayah_references(db)
         rows = db.execute(
             select(QuranAyah.surah_number, QuranAyah.ayah_number, UserAyahProgress.memorization_status)
             .outerjoin(

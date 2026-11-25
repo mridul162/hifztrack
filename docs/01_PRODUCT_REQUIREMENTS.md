@@ -48,7 +48,7 @@ Requirement IDs below are repository traceability anchors. Original source IDs F
 | FR-09 | Calculate individual progress / P0 | MEM-01, ANALYTICS-01 | Core formula captured from 6,236 Ayahs with MEMORIZED/STRONG separately; reporting windows remain open |
 | FR-10 | Custom group sharing / P0 | SHARE-01 | Five fields documented; summary/detail encoding remains DEC-023 and API actor/ownership DEC-016 |
 | FR-11 | View shared member progress / P0 | DASH-01, SHARE-01 | Complete in principle; all fields remain permission-filtered |
-| FR-12 | Individual and group dashboards / P0 | DASH-01 | Screen contents captured; P0 basic group-summary/P1 analytics boundary remains DEC-018 |
+| FR-12 | Individual and group dashboards / P0 | DASH-01 | DEC-018 / ADR-019 defines personal and group dashboard metrics. Historical analytics remain P1. |
 | FR-13 | Individual and group targets / P1 | GOAL-01 | Target types/units/date fields captured; group goal_type/completion calculation is DEC-024 |
 | FR-14 | Mentor assessment and feedback / P1 | MENTOR-01, MENTOR-02 | Separate assessment/result/access captured; automatic status change prohibited by default, optional explicit workflow remains DEC-019 |
 | FR-15 | Notifications and announcements / P1 | NOTIFY-01, COMMUNITY-01 | Requirements mapped; delivery/preferences and announcement lifecycle remain to define |
@@ -81,7 +81,7 @@ The approved statuses are `NOT_STARTED`, `LEARNING`, `MEMORIZED`, and `STRONG`. 
 ### Sharing, mentorship, and insight
 
 - Sharing settings are configurable independently for each group.
-- A group dashboard and member views expose only data permitted by the learner's settings and the viewer's role. Overall progress, memorization logs, revision logs, personal goals and assessment information are separate sharing categories. Summary-versus-detailed representation for progress remains DEC-023.
+- Group dashboards and member views require an ACTIVE group membership and expose only fields permitted by the learner's settings, regardless of viewer role. Overall progress, memorization logs, revision logs, personal goals and assessment information are independent categories under ADR-018. DEC-018 / ADR-019 defines the metrics a dashboard may derive from permitted data.
 - Optional mentorship supports assignments, assessments, feedback, and learner monitoring.
 - Historical reports/analytics, notifications, and announcements are original P1 requirements. Activity feeds and challenges are extended proposals.
 

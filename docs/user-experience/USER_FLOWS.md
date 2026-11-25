@@ -16,7 +16,7 @@ The current `/memorization` workflow requires sign-in, lists numeric Ayahs for t
 
 The `/revision` workflow requires sign-in, records a numeric Surah/Ayah range, revision type, activity date, time, optional 1–5 self-rating and notes, and lists the user's paginated history. Revision records cannot be edited, corrected, cancelled, or deleted after creation (ADR-017); revision does not change Ayah status. DEC-005 cancellation/correction rules apply only to Sabaq.
 
-The source MVP dashboard includes total Quran memorized, learning and strong portions, recent memorization/revision activity, and group memberships. Personal goals appear in the suggested dashboard, but goal creation is P1/Release 2; showing goals is conditional on that feature being released.
+Open Dashboard from Home or the signed-in profile. Review current Quran completion, the four status counts, and separate recent Sabaq and revision lists. Follow an active group link to its existing group page. The personal dashboard uses the current learner's records regardless of sharing preferences.
 
 ## Group participation (MVP)
 
@@ -27,7 +27,7 @@ The source MVP dashboard includes total Quran memorized, learning and strong por
 
 5. Each member opens Sharing settings for their own group membership. A new membership defaults to SUMMARY overall progress with memorization logs, revision logs, goals, and assessments disabled. The owner may change only their own settings. ACTIVE members of the group can open a member's shared view; backend authorization checks both memberships and fields. PENDING, SUSPENDED, and LEFT memberships cannot view shared information. Rejoining starts with fresh defaults.
 
-The source group dashboard includes member count, shared member progress, recent activities, and group statistics. Announcements were P1/Release 2, so the dashboard must not imply they are available in MVP.
+6. On the group detail page, review the active roster, permitted member summaries, a link to each active member's shared view, the group average and contributor count, and recent shared activity. A member with private progress remains visible in the active roster with unavailable progress.
 
 ## Future flows
 

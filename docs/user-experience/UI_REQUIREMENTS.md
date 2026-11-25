@@ -24,10 +24,10 @@ Authentication; profile/settings; personal dashboard; Quran Surah/Ayah reference
 
 Source screen details:
 
-- Personal dashboard: total memorized Quran progress, learning/strong portions, recent Sabaq and revision activity, group memberships. Goal summary is conditional on Release 2 goals.
+- `/dashboard` shows the signed-in learner's memorized count, completion percentage, and four status counts in a compact dark card. A segmented bar shows the relative size of each status. Expandable rows show recent Sabaq, recent revision, and active group links, with shortcuts to the full lists. The page shows a sign-in link when access requires authentication and describes empty histories or memberships.
 - Memorization tracker: Surah selection, start/end Ayah, current status, activity history, Juz/page navigation.
-- Group dashboard: member count, permitted member progress, recent activities, group statistics. Announcements are Release 2.
-- Member profile: only progress/activity/information allowed by that member's sharing settings.
+- The group detail page at `/groups/{id}` shows the group dashboard with an active count, paginated active roster and roles, links to existing shared-member views, eligible member progress, and separate recent shared activity lists. It labels an unavailable average or member progress distinctly from zero completion and shows the number of contributors. Group administration remains on the same page.
+- The personal and group dashboard sections provide loading, empty, error, and denied-access states. Shared-member detail continues to show only information permitted by the selected member's sharing settings.
 - Revision tracker: range, type, time, self-assessment.
 - Settings/administration: memberships, roles, sharing preferences, invitations, group configuration.
 

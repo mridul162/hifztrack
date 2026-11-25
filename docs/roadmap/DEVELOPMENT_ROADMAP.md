@@ -14,7 +14,7 @@ The original specification proposes the following sequence. F0-A is an owner-app
 | 3 | Quran reference and memorization | QURAN-01 numeric references are IN_PROGRESS; MEM-01 personal Ayah status and Sabaq activity are VERIFIED. REV-01 remains in Phase 4. |
 | 4 | Revision tracking | REV-01 immutable P0 recording and history is VERIFIED. All revision analytics are deferred (DEC-022, owner decision 2026-11-24) |
 | 5 | Sharing and authorization | Per-membership visibility and negative security tests |
-| 6 | Mentor and dashboards | Optional assessment, personal/group dashboards and basic analytics |
+| 6 | Personal and group dashboards with basic individual statistics | Owner-approved DASH-01 and ANALYTICS-01 under DEC-018 / ADR-019. Optional mentor workflows remain Release 2. |
 | 7 | Production readiness | CI/CD, logging, backups, deployment and security review |
 
 GROUP-01 and GROUP-02 are VERIFIED. PostgreSQL migration upgrade/downgrade, schema inspection, rate-limit boundaries, and concurrency coverage are recorded in the implementation status.
@@ -31,7 +31,7 @@ Repository guidance from the source: begin private during development; choose th
 | 3 | Record Quran ranges; calculate progress correctly; derive Juz/page coverage; repeated submissions do not inflate progress. |
 | 4 | Record revision sessions and preserve revision history in P0; keep revision independent of new memorization. Detailed revision analytics are P1 / Release 2 under FR-16 and DEC-022. |
 | 5 | Configure sharing per group; group APIs do not expose private information; leaving revokes future access. |
-| 6 | Dashboard progress is accurate and group statistics include only authorized shared data (P0). The source also asks for date-based reports in this phase; FR-16 classifies historical reports/analytics as P1, so those reports belong to Release 2 unless the owner approves a scope change. |
+| 6 | The personal dashboard reconciles with Ayah status and the group dashboard includes only authorized shared data. Eligible ACTIVE sharers contribute to the group average, with the contributor count displayed. Date-based reports, historical analytics, and advanced metrics remain Release 2. |
 | 7 | Automated tests cover critical services and negative authorization; migrations and Docker deployment work; backups and error monitoring are configured. |
 
 ### Phase 0 acceptance checklist (broader work not authorized)

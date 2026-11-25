@@ -46,6 +46,13 @@
 27. Source invitation tokens are random, stored hashed, expiring, revocable, and may have a maximum-use count.
 28. Source membership roles are ADMIN, MENTOR, MEMBER; states are PENDING, ACTIVE, SUSPENDED, LEFT. Only ACTIVE grants access. Phase 2 resolves rejoin history and current-row uniqueness as documented below.
 
+## MVP dashboard metrics (DEC-018 / ADR-019)
+
+- Personal statistics count current `MEMORIZED` plus `STRONG` Ayahs as memorized coverage and divide by 6,236 for the percentage. Display all four status counts separately. Subtract the saved `LEARNING`, `MEMORIZED`, and `STRONG` counts from 6,236 to get `NOT_STARTED`, which includes both missing and explicit rows. Sabaq and revision histories are independent of this calculation.
+- An ACTIVE group member can see coverage and percentage for ACTIVE targets sharing `SUMMARY` or `DETAILED`. Detailed member views may show their separately permitted per-Ayah statuses. The dashboard displays no additional status breakdown. `PRIVATE` contributes neither a per-member summary nor a value in the group mean.
+- Group mean completion is `100 × sum(eligible memorized counts) / (6,236 × contributor count)`. The same denominator for every member makes this the arithmetic mean of the unrounded individual percentages. Round displayed percentages to two decimal places. A genuine zero is eligible, while no contributors yields an unavailable average.
+- Activity categories use independent membership sharing flags and the SHARE-01 field allowlists. Archived groups stay readable for ACTIVE members and retain their existing write restrictions. Changes to status, sharing, and membership are reflected on subsequent requests.
+
 ## Approved Phase 2 group rules
 
 - A group starts ACTIVE. ARCHIVED groups are read-only: no invitations or membership changes, all outstanding invitations are revoked, existing members may leave, and history is retained. Permanent deletion is not implemented.

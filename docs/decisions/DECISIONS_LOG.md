@@ -107,3 +107,13 @@ Record approved decisions with ID, date, context, decision, consequences, and st
 **Approved decision:** Each new membership episode has its own sharing settings. Defaults are overall progress `SUMMARY`, with memorization logs, revision logs, goals, and assessments disabled. Only the data owner may change the settings for their own membership; ADMIN and MENTOR roles do not grant an override. Overall progress is represented as `PRIVATE`, `SUMMARY`, or `DETAILED`; the other four categories have independent Boolean controls. Each category is independent and enabling one does not enable another. Permitted fields, audience, and effective behavior are specified in the business rules and API specification.
 
 **Consequences:** Backend authorization and response filtering must enforce the settings on every subsequent request. Shared data remains user-owned and is queried through the relevant membership; no group-owned copies are created. Leaving ends future access through that episode. Rejoining creates a new episode with defaults rather than restoring prior settings; historical membership records remain preserved. This decision records policy only and does not mark SHARE-01 implemented.
+
+## ADR-019: MVP dashboard metrics (DEC-018)
+
+**Date:** 2026-11-25. **Status:** Owner-approved for P0 DASH-01 and ANALYTICS-01.
+
+**Decision.** The personal dashboard reports memorized coverage, completion percentage, counts for all four current Ayah statuses, separate recent Sabaq and revision histories, and active group memberships. `MEMORIZED` and `STRONG` each count toward coverage. Missing progress rows count as `NOT_STARTED` and the four counts sum to 6,236. Personal data is session-owner scoped.
+
+The group dashboard reports the active member count and roster with roles, permitted per-member coverage summaries, separate recent shared activity lists, and average completion with its contributor count. Each ACTIVE membership sharing `SUMMARY` or `DETAILED` contributes equally, including members with zero completion. Apply rounding once to the mean of unrounded percentages. The average is unavailable when no members qualify. `PRIVATE` and inactive episodes contribute no progress, and activity permissions remain independent under ADR-018.
+
+**Consequences.** Dashboards are read-only, derive totals from current Ayah status, preserve archive and membership rules, and use bounded recent histories without reporting windows. Historical reports, date-based reports, participation, advanced group metrics, and revision analytics remain deferred. Goals, assessments, and announcements follow their separate release scope. DEC-010 and DEC-022 retain their existing scope.

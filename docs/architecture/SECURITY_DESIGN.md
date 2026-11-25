@@ -19,6 +19,7 @@
 - Personal progress remains user-owned.
 - Sharing uses the owner-approved membership-specific defaults and field matrix in DEC-006/016/023 and ADR-018. The backend enforces the owner's settings for every request; group roles cannot override them, and only ACTIVE memberships can access enabled shared fields.
 - SHARE-01 uses the self-scoped settings route `/groups/{group_id}/sharing/me`; it cannot target another owner's settings. Shared-member reads validate both the viewer's ACTIVE membership and the target's ACTIVE membership in the same group before filtering allowed fields. Settings changes lock the group and the owner's membership to serialize with archive/leave operations.
+- Personal dashboard reads use the session user only. Group dashboard queries require an ACTIVE viewer and use ACTIVE target episodes with their current sharing settings. ADMIN and MENTOR see the same permitted fields as other ACTIVE members. The activity queries select approved fields directly and exclude private notes before serialization. Successful dashboard reads are private and non-cacheable.
 - Leaving a group revokes subsequent access.
 - Mentor assignment does not override learner sharing/consent.
 - AI, audio, messaging integrations, and exports require explicit data-use and retention decisions before release.

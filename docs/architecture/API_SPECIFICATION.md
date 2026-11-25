@@ -27,7 +27,8 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | POST | `/memorization/submissions/{entry_id}/cancel` | Cancel an owned submitted entry while preserving history |
 | POST | `/memorization/submissions/{entry_id}/correct` | Atomically cancel an owned entry and add its corrected replacement |
 | GET/POST | `/revision/me`, `/revision` | List the authenticated user's revision history and submit a session; revision records are immutable after creation (ADR-017). |
-| GET | `/groups/{id}/progress`, `/groups/{id}/analytics` | Permission-filtered group progress and analytics |
+| GET | `/dashboard/me?activity_limit=` | Current user's progress, recent Sabaq and revision, and active memberships |
+| GET | `/groups/{group_id}/dashboard?limit=&offset=&activity_limit=` | Active roster, permitted progress and activity, and average completion with contributor count |
 | GET | `/groups/{group_id}/members/{membership_id}/shared?limit=&offset=` | Read allowlisted fields for an ACTIVE membership, if the viewer is ACTIVE in the same group; notes are never returned. |
 | POST | `/assessments` | Submit authorized mentor assessment |
 
@@ -38,11 +39,21 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | AUTH-01 / USER-01 | register, login, logout, current profile, update profile | Own account only; never expose credentials/secrets. |
 | QURAN-01 | list Surahs/counts, list Ayah numbers, resolve Surah/Ayah references, read source provenance | Read-only numeric references. Juz/page mappings remain gated under DEC-002. No Quran text, translations or full-text search are provided in this slice. |
 | MEM-01 | read/update Ayah status; create/list/cancel/correct Sabaq submissions | Owner-only from the authenticated session; numeric canonical references only; activity and current status are independent; submission history is paginated and preserved. |
-| REV-01 | `POST /revision`, `GET /revision/me?limit=&offset=` | Authenticated owner only in this slice; append-only records, immutable after creation. Group-shared reads wait for SHARE-01. |
+| REV-01 | `POST /revision`, `GET /revision/me?limit=&offset=` | Owner-only append and list operations. Group revision reads follow SHARE-01 settings. |
 | GROUP-01 / GROUP-02 | create/update group, invite/join/leave, list members, change roles | Membership and role scoped; administrative actions checked server-side. Join requests are an extended proposal. |
 | SHARE-01 | `GET/PATCH /groups/{group_id}/sharing/me`; `GET /groups/{group_id}/members/{membership_id}/shared` | Only the owner may change their own settings; ADMIN and MENTOR roles cannot change another member's settings. ACTIVE group members of any role can read only the fields enabled by the owner's settings. PENDING, SUSPENDED, and LEFT memberships cannot access shared data. Filter in backend before serialization; frontend hiding is not authorization. Shared activity accepts bounded `limit`/`offset` pagination. |
-| DASH-01 | personal dashboard, group dashboard, member summary | Group response filtered by member sharing and viewer permission. |
+| DASH-01 / ANALYTICS-01 | `GET /dashboard/me`, `GET /groups/{group_id}/dashboard` | Read-only owner and group views under ADR-019. Group metrics and activity follow SHARE-01. |
 | MENTOR-01/02 | assignment and assessment resources (Release 2) | Assigned scope, learner consent, and audit required. |
+
+## Dashboard response contracts
+
+- `GET /dashboard/me` uses the authenticated session without a target-user parameter. Returns `progress` with `total_memorized_ayahs`, `completion_percentage`, and `status_counts` (`not_started`, `learning`, `memorized`, `strong`). `recent_sabaq` and `recent_revision` use the existing owner history response fields. `memberships` lists active episodes with `group_id`, `group_name`, `role`, and `lifecycle`, including archived groups that can still be opened.
+- `GET /groups/{group_id}/dashboard` requires an ACTIVE membership in that group. An unauthenticated request returns HTTP 401. A non-active viewer or inaccessible group returns HTTP 404. Archived groups remain readable by ACTIVE members.
+- Group response fields are `active_member_count`, `members`, `member_limit`, `member_offset`, `average_completion_percentage`, `contributor_count`, `recent_sabaq`, and `recent_revision`. `members` contains `membership_id`, `display_name`, `role`, and `progress`. Progress includes only `total_memorized_ayahs` and `completion_percentage` when `SUMMARY` or `DETAILED` is permitted. It is `null` for private or unavailable progress. The group average is `null` when the contributor count is zero.
+- The roster defaults to `limit=50` and `offset=0` with a maximum limit of 100. It is ordered by membership creation time and ID ascending. Counts, average, and recent shared histories cover the whole group regardless of roster page.
+- A group activity item contains `membership_id`, `display_name`, and `log`. Sabaq log fields are Surah/Ayah range, `created_at`, and record `status`. Revision log fields are range, `revision_type`, `activity_date`, `time_spent_minutes`, and `self_rating`. The lists include eligible records only, with the same independent sharing controls as SHARE-01.
+- Each activity list defaults to 5 entries and allows `activity_limit` from 1 to 20. Personal histories and group revision sort by activity date, creation timestamp, then record ID descending. Group Sabaq sorts by submission creation timestamp and record ID descending, like the shared-member view. Preserved cancelled Sabaq entries retain their record status. Empty histories are empty arrays.
+- Dashboard reads that calculate progress return HTTP 503 if the canonical Ayah reference set is incomplete. A group with zero eligible contributors can still return the roster and permitted activity. Successful responses include `Cache-Control: private, no-store`.
 
 ## Group authorization and invitation contract
 
@@ -70,6 +81,6 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 - Document idempotency and conflict behavior for activity updates and future offline sync.
 - Support pagination for member lists and activity history, filters for dates/Surahs/statuses, consistent error responses, and response schemas that do not expose database models directly.
 
-Detailed OpenAPI schemas and endpoint paths are deferred until the product decisions listed in the implementation status are resolved.
+FastAPI publishes the response schemas for implemented endpoints in OpenAPI. Planned endpoints remain subject to the open product decisions.
 
 AUTH-01 contract: registration accepts email, full name and a 12–256 character password; registration and login establish opaque server-side sessions. `GET /auth/csrf` issues a signed double-submit token cookie and returns the same token for `X-CSRF-Token`. Every unsafe request requires that pair and an exact configured Origin. Session cookies are Secure, HttpOnly, SameSite=Lax, path `/`; they expire after configurable 12-hour default. `GET/PATCH /users/me` acts only on the current user; only `full_name` is patchable. Logout revokes the current database session. Authentication errors avoid revealing whether a login email exists.

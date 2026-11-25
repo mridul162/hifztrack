@@ -80,6 +80,22 @@ def submit(db: Session, user_id: UUID, payload: MemorizationEntryCreate) -> Memo
     return entry
 
 
+def list_submissions(
+    db: Session, user_id: UUID, limit: int, offset: int
+) -> list[MemorizationEntry]:
+    return db.scalars(
+        select(MemorizationEntry)
+        .where(MemorizationEntry.user_id == user_id)
+        .order_by(
+            MemorizationEntry.activity_date.desc(),
+            MemorizationEntry.created_at.desc(),
+            MemorizationEntry.id.desc(),
+        )
+        .limit(limit)
+        .offset(offset)
+    ).all()
+
+
 def cancel(db: Session, user_id: UUID, entry_id: UUID) -> MemorizationEntry:
     entry = entry_for_owner(db, user_id, entry_id)
     if entry.status != "SUBMITTED":

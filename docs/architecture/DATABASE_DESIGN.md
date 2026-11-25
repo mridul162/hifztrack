@@ -49,6 +49,7 @@ Original later-stage entities also include announcements, notifications, mentor 
 - Sabaq submission, cancellation, and correction never change `user_ayah_progress`. Correcting a Sabaq entry cancels the old row and creates a replacement in one transaction. Status updates are independent explicit learner actions. Any approved assessment-triggered progress update is atomic with the assessment.
 - Validate Quran ranges through canonical ordering; numeric ID arithmetic alone is not sufficient validation.
 - Current-state progress is counted per Ayah, not by the number of activity submissions.
+- Dashboards read existing tables without a schema change. Personal statistics group current Ayah statuses in SQL. Group queries join ACTIVE membership episodes to their sharing settings and aggregate eligible coverage in SQL for the roster and whole-group mean. Personal histories and shared activity remain user-owned and are read separately.
 - Group analytics keep unique Ayah totals, mean individual completion, milestone counts, and participation rate as distinct labeled metrics.
 - Invitation tokens are random, HMAC-digested, expiring, revocable, and use-limited. Acceptance and last-admin protection serialize on the group row; invitation consumption also locks the invitation and increments use count in the same transaction.
 

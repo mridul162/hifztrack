@@ -14,7 +14,7 @@ The MVP is the first usable release, not the full product. Deferred features rem
 - Per-group sharing preferences with backend-enforced privacy.
 - Personal and group dashboards/member views filtered by sharing permissions.
 - Basic individual and current-state group summaries; historical reports, participation analytics and advanced group metrics are P1.
-- Personal dashboard: total memorized, learning/strong portions, recent memorization/revision, memberships. Group dashboard: member count, permitted current-state progress, recent activity, and basic current-state summaries; the exact P0 group-statistic set remains DEC-018.
+- The personal dashboard shows coverage, completion percentage, four current Ayah status counts, recent Sabaq and revision, and active group links. The group dashboard shows the active roster and roles, permitted progress and recent shared activity, and average completion with the number of contributors under DEC-018 / ADR-019.
 - Mentor assessment remains optional and P1 as a workflow. Keep the data model able to represent assessments and mentor assignments without implementing assessment UI in MVP. Organization-to-group data-model support is required; complex institutional administration is excluded from MVP.
 
 Phase 2 organization support is a minimal `organizations` table and nullable `groups.organization_id`. This association is metadata only: organization membership, roles, administration, and access grants are out of scope. Group access always requires an ACTIVE membership in that group.
