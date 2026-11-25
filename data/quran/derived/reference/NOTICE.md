@@ -1,0 +1,3 @@
+# Madani 1441H page range attribution
+
+Page index by Quran.ws, Quran SVG Elements v1.1.1, licensed under [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/). HifzTrack normalized the index to numbered inclusive Ayah ranges for the King Fahd Glorious Qur'an Printing Complex Madani Mushaf, 1441H, Hafs, 604 pages. This file distributes the numeric index fields. [Source index](https://cdn.quran.ws/svg/elements/v1.1.1/index/pages.json) · [Source release](https://github.com/quran-ws/quran-svg-elements/releases/tag/v1.1.1) · [Clearance and validation](../../validation/METADATA_CLEARANCE.md)

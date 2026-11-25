@@ -4,6 +4,18 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import QuranAyah, QuranJuz, QuranPage, QuranReferenceSource, QuranSurah
+from app.quran.pages import (
+    EDITION_NAME,
+    PAGE_CATEGORY,
+    PAGE_RELATIVE_PATH,
+    PAGE_SOURCE_SHA256,
+    PAGE_SOURCE_URL,
+    PAGE_SOURCE_VERSION,
+    PAGE_USAGE,
+    PAGE_VERIFICATION,
+    load_page_ranges,
+    page_starts,
+)
 from app.quran.reference import (
     EXPECTED_AYAH_COUNT,
     EXPECTED_SURAH_COUNT,
@@ -48,8 +60,44 @@ def _validate_reference_data(data: QuranReferenceData) -> None:
         raise ValueError("Quran reference data has an invalid source checksum")
 
 
-def import_reference(db: Session, data: QuranReferenceData) -> ImportResult:
-    """Stage numeric references in the caller's transaction; never import text or names."""
+def _stage_mushaf_pages(db: Session, data: QuranReferenceData) -> None:
+    ranges = load_page_ranges(data.ayahs)
+    expected = [(page.page_number, page.start) for page in ranges]
+    source_fields = {
+        "category": PAGE_CATEGORY,
+        "source_name": f"Quran.ws Quran SVG Elements, {EDITION_NAME}",
+        "source_version": PAGE_SOURCE_VERSION,
+        "source_path": PAGE_RELATIVE_PATH,
+        "source_sha256": PAGE_SOURCE_SHA256,
+        "source_url": PAGE_SOURCE_URL,
+        "usage_conditions": PAGE_USAGE,
+        "verification_method": PAGE_VERIFICATION,
+    }
+    existing_starts = page_starts(db)
+    existing_source = db.get(QuranReferenceSource, PAGE_CATEGORY)
+    if existing_starts or existing_source is not None:
+        if existing_starts == expected and existing_source is not None and all(
+            getattr(existing_source, key) == value for key, value in source_fields.items()
+        ):
+            return
+        raise ValueError("Mushaf page tables contain different or partial data; refusing to overwrite it")
+
+    db.add(QuranReferenceSource(**source_fields))
+    db.add_all(
+        QuranPage(
+            page_number=number,
+            start_surah_number=start[0],
+            start_ayah_number=start[1],
+        )
+        for number, start in expected
+    )
+    db.flush()
+
+
+def import_reference(
+    db: Session, data: QuranReferenceData, *, with_pages: bool = False
+) -> ImportResult:
+    """Stage coordinates and, if requested, approved page mappings in one transaction."""
     source = QuranReferenceSource(
         category=SOURCE_CATEGORY,
         source_name=SOURCE_NAME,
@@ -104,6 +152,8 @@ def import_reference(db: Session, data: QuranReferenceData) -> ImportResult:
             and actual_ayahs == expected_ayahs
         )
         if matches_existing:
+            if with_pages:
+                _stage_mushaf_pages(db, data)
             return ImportResult(len(surahs), len(ayahs), True)
         raise ValueError(
             "Quran reference tables already contain different or partial data; "
@@ -121,4 +171,6 @@ def import_reference(db: Session, data: QuranReferenceData) -> ImportResult:
     )
     db.add(source)
     db.flush()
+    if with_pages:
+        _stage_mushaf_pages(db, data)
     return ImportResult(len(data.surahs), len(data.ayahs), False)

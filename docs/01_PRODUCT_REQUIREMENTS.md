@@ -42,7 +42,7 @@ Requirement IDs below are repository traceability anchors. Original source IDs F
 | FR-03 | Create, update, delete groups / P0 | GROUP-01 | Partial: delete/archival policy unspecified |
 | FR-04 | Join by invitation / P0 | GROUP-02 | Partial: invitation lifecycle details need acceptance criteria |
 | FR-05 | Multiple group memberships / P0 | GROUP-02 | Complete |
-| FR-06 | Surah, Ayah, Juz, page references / P0 | QURAN-01 | Direction conditionally approved under DEC-002; the local numeric Surah/Ayah slice records the Tanzil source and conditions. Verify local-file provenance/license/attribution before public release; establish sources/usage conditions per further metadata category and independently verify page boundaries against the exact authoritative Madani edition before adding those mappings |
+| FR-06 | Surah, Ayah, Juz, page references / P0 | QURAN-01 | Canonical Surah/Ayah and the ADR-020 Madani 1441H Hafs page mapping are implemented. DEC-002 remains conditional while Surah names, Juz mapping and the separate Arabic text release evidence are pending. |
 | FR-07 | Record new memorization / P0 | MEM-01 | Business rules approved under DEC-004/005: learner-controlled status and separately preserved Sabaq submissions/cancellations/corrections |
 | FR-08 | Record revision sessions / P0 | REV-01 | Covered in feature/schema criteria: revision types, date/time, optional 1-5 rating and notes |
 | FR-09 | Calculate individual progress / P0 | MEM-01, ANALYTICS-01 | Core formula captured from 6,236 Ayahs with MEMORIZED/STRONG separately; reporting windows remain open |

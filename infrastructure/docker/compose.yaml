@@ -29,6 +29,7 @@ services:
     volumes:
       - ../../backend:/app
       - ../../data/quran/source/arabic:/app/data/quran/source/arabic:ro
+      - ../../data/quran/derived/reference:/app/data/quran/derived/reference:ro
     depends_on:
       db:
         condition: service_healthy

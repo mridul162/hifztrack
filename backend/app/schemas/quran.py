@@ -16,6 +16,37 @@ class SurahAyahListRead(BaseModel):
     ayah_numbers: list[int]
 
 
+class MushafEditionRead(BaseModel):
+    id: str
+    name: str
+    source_url: str
+    license_url: str
+    attribution: str
+
+
+class MushafPageRead(BaseModel):
+    page_number: int
+    start: AyahReferenceRead
+    end: AyahReferenceRead
+
+
+class MushafPageListRead(BaseModel):
+    edition: MushafEditionRead
+    pages: list[MushafPageRead]
+
+
+class MushafPageLookupRead(BaseModel):
+    edition: MushafEditionRead
+    page: MushafPageRead
+
+
+class QuranMetadataAvailabilityRead(BaseModel):
+    arabic_surah_names: bool
+    latin_surah_names: bool
+    juz_mapping: bool
+    mushaf_pages: bool
+
+
 class QuranReferenceSourceRead(BaseModel):
     category: str
     source_name: str

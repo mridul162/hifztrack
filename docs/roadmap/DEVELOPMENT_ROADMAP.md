@@ -11,7 +11,7 @@ The original specification proposes the following sequence. F0-A is an owner-app
 | 0 | Development foundation: backend/frontend scaffolding, Compose/PostgreSQL, SQLAlchemy/Alembic, health check, basic UI and environment docs | F0-A approved as a limited foundation slice; broader Phase 0 acceptance remains unauthorized |
 | 1 | Authentication and profile | Sessions, privacy and auth tests; VERIFIED |
 | 2 | Groups and memberships | Group CRUD, invitation, many-to-many roles/admins |
-| 3 | Quran reference and memorization | QURAN-01 numeric references are IN_PROGRESS; MEM-01 personal Ayah status and Sabaq activity are VERIFIED. REV-01 remains in Phase 4. |
+| 3 | Quran reference and memorization | QURAN-01 is IN_PROGRESS with canonical numeric references and Madani 1441H Hafs page navigation. MEM-01 personal Ayah status and Sabaq activity are VERIFIED. REV-01 is tracked in Phase 4. |
 | 4 | Revision tracking | REV-01 immutable P0 recording and history is VERIFIED. All revision analytics are deferred (DEC-022, owner decision 2026-11-24) |
 | 5 | Sharing and authorization | Per-membership visibility and negative security tests |
 | 6 | Personal and group dashboards with basic individual statistics | Owner-approved DASH-01 and ANALYTICS-01 under DEC-018 / ADR-019. Optional mentor workflows remain Release 2. |

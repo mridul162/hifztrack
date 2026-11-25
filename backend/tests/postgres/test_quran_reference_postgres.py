@@ -1,11 +1,15 @@
+from hashlib import sha256
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import event, func, select
 
 from app.db.session import get_db
 from app.main import app
-from app.models import QuranAyah, QuranReferenceSource, QuranSurah
+from app.models import QuranAyah, QuranPage, QuranReferenceSource, QuranSurah
+from app.quran import importer, pages
 from app.quran.importer import import_reference
+from app.quran.pages import EDITION_ID, PAGE_CATEGORY, PAGE_SOURCE_SHA256, load_page_ranges
 from app.quran.reference import (
     SOURCE_CATEGORY,
     SOURCE_NAME,
@@ -18,6 +22,138 @@ from app.quran.reference import (
     SurahReference,
     load_reference_file,
 )
+
+
+def test_postgres_page_import_extends_numeric_data_and_resolves_every_page(pg_quran_api, pg_sessions):
+    client = pg_quran_api
+    data = load_reference_file()
+    with pg_sessions.begin() as db:
+        import_reference(db, data)
+
+    assert client.get("/quran/metadata-availability").json() == {
+        "arabic_surah_names": False,
+        "latin_surah_names": False,
+        "juz_mapping": False,
+        "mushaf_pages": False,
+    }
+    assert client.get("/quran/pages").status_code == 503
+    assert client.get("/quran/ayahs/2/255/page").status_code == 503
+    assert client.get("/quran/ayahs/2/255").json() == {"surah_number": 2, "ayah_number": 255}
+
+    for _ in range(2):
+        with pg_sessions.begin() as db:
+            import_reference(db, data, with_pages=True)
+
+    response = client.get("/quran/pages")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["edition"]["id"] == EDITION_ID
+    assert payload["edition"]["source_url"] == pages.PAGE_SOURCE_URL
+    assert payload["edition"]["license_url"] == pages.PAGE_LICENSE_URL
+    assert "Normalized by HifzTrack" in payload["edition"]["attribution"]
+    assert client.get("/quran/metadata-availability").json()["mushaf_pages"]
+    actual = [
+        (
+            page["page_number"],
+            (page["start"]["surah_number"], page["start"]["ayah_number"]),
+            (page["end"]["surah_number"], page["end"]["ayah_number"]),
+        )
+        for page in payload["pages"]
+    ]
+    assert actual == [(page.page_number, page.start, page.end) for page in load_page_ranges(data.ayahs)]
+    # The approved edition ends page 120 at 5:77. Page 604 spans three Surahs.
+    assert actual[119][2] == (5, 77)
+    assert actual[120][1] == (5, 78)
+    assert actual[-1] == (604, (112, 1), (114, 6))
+    last_page = {"edition": payload["edition"], "page": payload["pages"][-1]}
+    assert client.get("/quran/pages/604").json() == last_page
+    for coordinate in ("112/1", "113/2", "114/6"):
+        assert client.get(f"/quran/ayahs/{coordinate}/page").json() == last_page
+    assert client.get("/quran/ayahs/5/77/page").json()["page"]["page_number"] == 120
+    assert client.get("/quran/ayahs/5/78/page").json()["page"]["page_number"] == 121
+    for path in ("/quran/pages/0", "/quran/pages/605", "/quran/ayahs/2/287/page"):
+        assert client.get(path).status_code == 404
+
+    with pg_sessions() as db:
+        assert db.scalar(select(func.count()).select_from(QuranPage)) == 604
+        assert db.get(QuranReferenceSource, PAGE_CATEGORY).source_sha256 == PAGE_SOURCE_SHA256
+        coordinates = db.execute(
+            select(QuranAyah.surah_number, QuranAyah.ayah_number)
+            .order_by(QuranAyah.surah_number, QuranAyah.ayah_number)
+        ).all()
+        assert coordinates == list(data.ayahs)
+
+    with pg_sessions.begin() as db:
+        db.delete(db.get(QuranPage, 604))
+    assert client.get("/quran/pages").status_code == 503
+    assert not client.get("/quran/metadata-availability").json()["mushaf_pages"]
+    with pytest.raises(ValueError, match="different or partial"):
+        with pg_sessions.begin() as db:
+            import_reference(db, data, with_pages=True)
+
+
+def test_postgres_page_import_rolls_back_new_numeric_data_on_bad_end(pg_sessions, tmp_path, monkeypatch):
+    data = load_reference_file()
+    contents = pages.PAGE_PATH.read_text(encoding="utf-8")
+    invalid = contents.replace('"end_ayah_number": 7}', '"end_ayah_number": 6}', 1)
+    assert invalid != contents
+    path = tmp_path / "bad-boundaries.json"
+    path.write_text(invalid, encoding="utf-8")
+    with pytest.raises(ValueError, match="approved dataset checksum"):
+        pages.load_page_ranges(data.ayahs, path)
+
+    # Exercise structural rejection separately from the production checksum gate.
+    monkeypatch.setattr(pages, "PAGE_DATA_SHA256", sha256(invalid.encode("utf-8")).hexdigest())
+    monkeypatch.setattr(importer, "load_page_ranges", lambda coordinates: pages.load_page_ranges(coordinates, path))
+    with pytest.raises(ValueError, match="without gaps or overlaps"):
+        with pg_sessions.begin() as db:
+            import_reference(db, data, with_pages=True)
+
+    with pg_sessions() as db:
+        for model in (QuranSurah, QuranAyah, QuranPage, QuranReferenceSource):
+            assert db.scalar(select(func.count()).select_from(model)) == 0
+
+
+def test_postgres_page_import_preserves_learner_history_and_dashboard(pg_quran_api, pg_sessions):
+    client = pg_quran_api
+    data = load_reference_file()
+    with pg_sessions.begin() as db:
+        import_reference(db, data)
+
+    def csrf_headers():
+        token = client.get("/auth/csrf").json()["csrf_token"]
+        return {"Origin": "http://localhost:3000", "X-CSRF-Token": token}
+
+    assert client.post("/auth/register", headers=csrf_headers(), json={
+        "email": "quran-page-test@example.com",
+        "full_name": "Reference Test Learner",
+        "password": "reference-fixture-passphrase",
+    }).status_code == 201
+    activity = {
+        "start_surah_number": 112, "start_ayah_number": 1,
+        "end_surah_number": 114, "end_ayah_number": 6, "activity_date": "2026-11-24",
+    }
+    assert client.post("/memorization/submissions", headers=csrf_headers(), json=activity).status_code == 201
+    assert client.post("/revision", headers=csrf_headers(), json={
+        **activity, "revision_type": "RECENT", "time_spent_minutes": 10,
+    }).status_code == 201
+    assert client.put("/memorization/progress/112/1", headers=csrf_headers(), json={
+        "memorization_status": "MEMORIZED",
+    }).status_code == 200
+    group = client.post("/groups", headers=csrf_headers(), json={"name": "Page Import Test"})
+    assert group.status_code == 201
+    group_path = f"/groups/{group.json()['id']}"
+    paths = (
+        "/memorization/submissions", "/revision/me", "/dashboard/me",
+        f"{group_path}/sharing/me", f"{group_path}/dashboard",
+    )
+    before = [client.get(path) for path in paths]
+    assert all(response.status_code == 200 for response in before)
+
+    with pg_sessions.begin() as db:
+        import_reference(db, data, with_pages=True)
+
+    assert [client.get(path).json() for path in paths] == [response.json() for response in before]
 
 
 @pytest.fixture

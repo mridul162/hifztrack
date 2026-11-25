@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
+import { MushafPagePicker } from "@/components/mushaf-page-picker";
 import { getJson, mutate } from "@/lib/auth";
 
 type Surah = { surah_number: number; ayah_count: number };
@@ -178,6 +179,9 @@ export default function RevisionPage() {
                 Enter the canonical range you reviewed. Revision does not change any Ayah’s status.
                 Saved sessions cannot be edited or deleted.
               </p>
+              <div className="mt-4">
+                <MushafPagePicker onApply={(coordinates) => setForm((current) => ({ ...current, ...coordinates }))} />
+              </div>
               <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={(event) => void saveSession(event)}>
                 {([
                   ["start_surah_number", "Start Surah", 1, 114],

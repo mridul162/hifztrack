@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { MushafPagePicker } from "@/components/mushaf-page-picker";
+
 type Surah = { surah_number: number; ayah_count: number };
 type ReferenceSource = {
   category: string;
@@ -76,10 +78,14 @@ export default function QuranReferencePage() {
           </p>
           <h1 className="mt-2 text-3xl font-semibold">Quran references</h1>
           <p className="mt-3 max-w-2xl leading-7 text-slate-600">
-            Browse canonical Surah and Ayah numbers. This reference view does not display Quran
-            text, translations, or unverified page and Juz mappings.
+            Browse canonical Surah and Ayah numbers or look up a Madani Mushaf page.
           </p>
+          <p className="mt-2 text-sm text-slate-600">Surah names and Juz mappings are currently unavailable.</p>
         </header>
+
+        <section className="mb-6 rounded-xl border border-emerald-950/10 bg-white p-5 shadow-sm" aria-label="Browse by Mushaf page">
+          <MushafPagePicker />
+        </section>
 
         {loading && <p role="status">Loading references...</p>}
         {error && (

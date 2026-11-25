@@ -21,6 +21,10 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | GET | `/quran/surahs/{surah_number}/ayahs` | List canonical Ayah numbers for one Surah |
 | GET | `/quran/ayahs/{surah_number}/{ayah_number}` | Resolve the stable Surah/Ayah coordinate |
 | GET | `/quran/reference-source` | Read provenance, verification method and usage conditions for imported reference categories |
+| GET | `/quran/metadata-availability` | Read Boolean availability for Arabic names, Latin names, Juz mappings and Mushaf pages |
+| GET | `/quran/pages` | List all 604 ordered pages with inclusive canonical ranges and edition |
+| GET | `/quran/pages/{page_number}` | Resolve one page to its inclusive canonical range and edition |
+| GET | `/quran/ayahs/{surah_number}/{ayah_number}/page` | Resolve a canonical Ayah to its page in the approved edition |
 | GET | `/memorization/progress?surah_number=` | Read the authenticated user's saved Ayah statuses (omitted rows mean NOT_STARTED) |
 | PUT | `/memorization/progress/{surah_number}/{ayah_number}` | Explicitly set one owned Ayah status; STRONG requires confirmation |
 | POST/GET | `/memorization/submissions?limit=&offset=` | Submit Sabaq or read the authenticated user's paginated history |
@@ -37,13 +41,15 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | Feature | Candidate operations | Scope rules |
 |---|---|---|
 | AUTH-01 / USER-01 | register, login, logout, current profile, update profile | Own account only; never expose credentials/secrets. |
-| QURAN-01 | list Surahs/counts, list Ayah numbers, resolve Surah/Ayah references, read source provenance | Read-only numeric references. Juz/page mappings remain gated under DEC-002. No Quran text, translations or full-text search are provided in this slice. |
+| QURAN-01 | numeric Surah/Ayah lookup, metadata availability, Madani Mushaf page lookup in both directions and source provenance | Read-only. Names and Juz availability are false while those categories remain gated under DEC-002. |
 | MEM-01 | read/update Ayah status; create/list/cancel/correct Sabaq submissions | Owner-only from the authenticated session; numeric canonical references only; activity and current status are independent; submission history is paginated and preserved. |
 | REV-01 | `POST /revision`, `GET /revision/me?limit=&offset=` | Owner-only append and list operations. Group revision reads follow SHARE-01 settings. |
 | GROUP-01 / GROUP-02 | create/update group, invite/join/leave, list members, change roles | Membership and role scoped; administrative actions checked server-side. Join requests are an extended proposal. |
 | SHARE-01 | `GET/PATCH /groups/{group_id}/sharing/me`; `GET /groups/{group_id}/members/{membership_id}/shared` | Only the owner may change their own settings; ADMIN and MENTOR roles cannot change another member's settings. ACTIVE group members of any role can read only the fields enabled by the owner's settings. PENDING, SUSPENDED, and LEFT memberships cannot access shared data. Filter in backend before serialization; frontend hiding is not authorization. Shared activity accepts bounded `limit`/`offset` pagination. |
 | DASH-01 / ANALYTICS-01 | `GET /dashboard/me`, `GET /groups/{group_id}/dashboard` | Read-only owner and group views under ADR-019. Group metrics and activity follow SHARE-01. |
 | MENTOR-01/02 | assignment and assessment resources (Release 2) | Assigned scope, learner consent, and audit required. |
+
+The new page list returns `{edition, pages}`. Single page and inverse lookups return `{edition, page}`. Each page has `page_number`, `start` and `end`, where each endpoint carries `surah_number` and `ayah_number`. The edition contains `id: "madani-1441h-hafs"`, its display `name`, `source_url`, `license_url` and `attribution`. Missing or incomplete imports return 503 on page endpoints. Invalid numeric pages and unknown canonical Ayahs return 404 under the applicable reference data checks. The existing numeric response shapes and the `SURAH_AYAH_ORDER` provenance record continue to work. The provenance list also includes `MUSHAF_PAGES` after import.
 
 ## Dashboard response contracts
 

@@ -13,17 +13,17 @@ SOURCE_URL = "https://tanzil.net"
 SOURCE_RELATIVE_PATH = "data/quran/source/arabic/quran-uthmani.xml"
 
 
-def _source_file_path() -> Path:
+def reference_file_path(relative_path: str) -> Path:
     module_path = Path(__file__).resolve()
     candidate_roots = (module_path.parents[3], module_path.parents[2])
     for root in candidate_roots:
-        candidate = root / SOURCE_RELATIVE_PATH
+        candidate = root / relative_path
         if candidate.is_file():
             return candidate
-    return candidate_roots[0] / SOURCE_RELATIVE_PATH
+    return candidate_roots[0] / relative_path
 
 
-SOURCE_PATH = _source_file_path()
+SOURCE_PATH = reference_file_path(SOURCE_RELATIVE_PATH)
 
 NOTICE_REQUIREMENTS = (
     "Tanzil Quran Text (Uthmani, Version 1.1)",

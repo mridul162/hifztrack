@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
+import { MushafPagePicker } from "@/components/mushaf-page-picker";
 import { getJson, mutate } from "@/lib/auth";
 
 type Surah = { surah_number: number; ayah_count: number };
@@ -198,6 +199,9 @@ export default function MemorizationPage() {
             <section className="rounded-xl border border-emerald-950/10 bg-white p-5 shadow-sm" aria-labelledby="sabaq-heading">
               <h2 id="sabaq-heading" className="text-lg font-semibold">{correctingId ? "Correct Sabaq entry" : "Submit Sabaq activity"}</h2>
               <p className="mt-1 text-sm text-slate-600">Use a numeric start and end reference. Repeated ranges remain separate history entries.</p>
+              <div className="mt-4">
+                <MushafPagePicker onApply={(coordinates) => setRange((current) => ({ ...current, ...coordinates }))} />
+              </div>
               <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={(event) => void saveSubmission(event)}>
                 {([
                   ["start_surah_number", "Start Surah", 1, 114], ["start_ayah_number", "Start Ayah", 1, 286],

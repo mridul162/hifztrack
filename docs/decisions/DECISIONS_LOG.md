@@ -117,3 +117,15 @@ Record approved decisions with ID, date, context, decision, consequences, and st
 The group dashboard reports the active member count and roster with roles, permitted per-member coverage summaries, separate recent shared activity lists, and average completion with its contributor count. Each ACTIVE membership sharing `SUMMARY` or `DETAILED` contributes equally, including members with zero completion. Apply rounding once to the mean of unrounded percentages. The average is unavailable when no members qualify. `PRIVATE` and inactive episodes contribute no progress, and activity permissions remain independent under ADR-018.
 
 **Consequences.** Dashboards are read-only, derive totals from current Ayah status, preserve archive and membership rules, and use bounded recent histories without reporting windows. Historical reports, date-based reports, participation, advanced group metrics, and revision analytics remain deferred. Goals, assessments, and announcements follow their separate release scope. DEC-010 and DEC-022 retain their existing scope.
+
+## ADR-020: QURAN-01 metadata conventions (DEC-002)
+
+**Date:** 2026-11-25. **Status:** Owner-approved conventions. DEC-002 remains CONDITIONALLY APPROVED.
+
+- Use Tanzil plain Arabic Surah names.
+- Use Quran.com-style simplified Latin Surah names. QUL `name_simple` is the candidate.
+- Use the Tanzil Juz convention, including Juz 4 from `3:93` and Juz 11 from `9:93`.
+- Use the King Fahd Glorious Qur'an Printing Complex Madani Mushaf, 1441H, Hafs, 604 numbered pages. The application edition ID is `madani-1441h-hafs`.
+- Keep Surah/Ayah canonical and maintain HifzTrack's normalized metadata. Display names cannot change identifiers or personal records. Alternative name conventions and additional Mushaf editions are deferred.
+
+Each category needs versioned provenance, applicable usage and redistribution terms, attribution, structural checks, and independent accuracy evidence before import. The Quran.ws numeric page index passed those gates for the selected 1441H edition. Arabic names, Latin names, and Juz mappings still need metadata-specific evidence. ADR-014 continues to govern the separate local Arabic verse-text release gate and initial exclusion of translations. [Category clearance](../../data/quran/validation/METADATA_CLEARANCE.md)

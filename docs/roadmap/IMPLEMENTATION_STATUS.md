@@ -2,6 +2,8 @@
 
 ## Status
 
+**QURAN-01 remains IN_PROGRESS.** ADR-020 records the owner-approved conventions. QURAN-01C cleared and implemented the KFGQPC Madani 1441H Hafs page mapping using the licensed Quran.ws index. The approved edition covers all 6,236 numbered Ayahs once on 604 pages. All ranges matched the publisher developer archive and QUL 1441H. Recounting the QURAN-01B comparison found 25 changed starts and 36 changed ranges between the 1405H and 1441H layouts. The new read-only page APIs and browser picker use the existing schema. DEC-002 remains CONDITIONALLY APPROVED pending evidence for both Surah naming categories, the Tanzil Juz map, and the separate Arabic verse-text release gate. [Clearance and verification](../../data/quran/validation/METADATA_CLEARANCE.md) · [QURAN-01B readiness](../../data/quran/validation/METADATA_READINESS.md)
+
 DASH-01 and ANALYTICS-01 are VERIFIED for the P0 scope approved on 2026-11-25 in DEC-018 / ADR-019. `/dashboard` reads the authenticated learner's statistics, separate recent histories, and active memberships from `GET /dashboard/me`. The existing `/groups/{id}` page reads its active roster, permitted progress and activity, and mean completion with contributor count from `GET /groups/{group_id}/dashboard`. The response uses current Ayah status and membership-specific sharing settings. Group summaries use set-based SQL and round the average once. No migration or persisted analytics data is required.
 
 The full backend suite passed on disposable PostgreSQL 18.6 with 107 tests, including 41 PostgreSQL integration tests, and zero skips. The five new cases cover ownership, all four statuses, full coverage, regression, independent and bounded histories, reference integrity, unrounded averaging, zero and unavailable averages, pagination, cross-group privacy, revocation, and archive behavior. `alembic check` reported no schema drift at `0008_group_sharing`. `tsc --noEmit -p tsconfig.json` and `next build --webpack` passed.
@@ -72,7 +74,7 @@ Extended proposals beyond original functional requirements include personal acco
 
 ## Open decisions
 
-See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, rationale, options/consequences, and approval status. DEC-007/008/009 (group invitations)/017/020/021 were approved for Phase 2 on 2026-11-23. DEC-004/005 were approved for Phase 3 on 2026-11-23. DEC-006/016/023 sharing policy was approved 2026-11-24 and recorded in ADR-018; SHARE-01 implementation and verification status are tracked above. DEC-002 remains conditional under ADR-014; its revised metadata ownership approach and evidence gates are listed above. Other open decisions include assessment effects and related policies.
+See [OPEN_DECISIONS.md](OPEN_DECISIONS.md) for IDs, rationale, options/consequences, and approval status. DEC-007/008/009 (group invitations)/017/020/021 were approved for Phase 2 on 2026-11-23. DEC-004/005 were approved for Phase 3 on 2026-11-23. DEC-006/016/023 sharing policy was approved 2026-11-24 and recorded in ADR-018; SHARE-01 implementation and verification status are tracked above. DEC-002 remains conditional under ADR-014 and ADR-020. Other open decisions include assessment effects and related policies.
 
 ## Foundation milestone
 
