@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
-import { MushafPagePicker } from "@/components/mushaf-page-picker";
+import { JuzPicker, MushafPagePicker } from "@/components/mushaf-page-picker";
+import { SurahSelect, type Surah } from "@/components/surah-select";
 import { getJson, mutate } from "@/lib/auth";
 
-type Surah = { surah_number: number; ayah_count: number };
 type RevisionType = "RECENT" | "OLD" | "FULL_JUZ" | "FULL_QURAN";
 type RevisionSession = {
   id: string;
@@ -179,7 +179,8 @@ export default function RevisionPage() {
                 Enter the canonical range you reviewed. Revision does not change any Ayah’s status.
                 Saved sessions cannot be edited or deleted.
               </p>
-              <div className="mt-4">
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <JuzPicker onApply={(coordinates) => setForm((current) => ({ ...current, ...coordinates }))} />
                 <MushafPagePicker onApply={(coordinates) => setForm((current) => ({ ...current, ...coordinates }))} />
               </div>
               <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={(event) => void saveSession(event)}>
@@ -189,12 +190,17 @@ export default function RevisionPage() {
                   ["end_surah_number", "End Surah", 1, 114],
                   ["end_ayah_number", "End Ayah", 1, 286],
                 ] as const).map(([field, label, min, max]) => (
-                  <label key={field} className="grid gap-1 text-sm font-medium">
-                    {label}
-                    <input className="rounded-md border border-slate-300 px-3 py-2" type="number"
-                      min={min} max={max} required value={form[field] as number}
-                      onChange={(event) => setNumberField(field, event.target.value)} />
-                  </label>
+                  <div key={field} className="grid gap-1 text-sm font-medium">
+                    <label htmlFor={`revision-${field}`}>{label}</label>
+                    {field.endsWith("surah_number") ? (
+                      <SurahSelect id={`revision-${field}`} surahs={surahs} value={form[field]}
+                        onChange={(value) => setNumberField(field, value)} />
+                    ) : (
+                      <input id={`revision-${field}`} className="rounded-md border border-slate-300 px-3 py-2" type="number"
+                        min={min} max={max} required value={form[field]}
+                        onChange={(event) => setNumberField(field, event.target.value)} />
+                    )}
+                  </div>
                 ))}
                 <label className="grid gap-1 text-sm font-medium">
                   Revision type

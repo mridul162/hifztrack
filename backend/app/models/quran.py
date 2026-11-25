@@ -20,6 +20,8 @@ class QuranSurah(Base):
 
     surah_number: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
     ayah_count: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+    name_ar: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    name_latin: Mapped[str | None] = mapped_column(String(80), nullable=True)
 
 
 class QuranAyah(Base):

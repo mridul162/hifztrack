@@ -6,8 +6,8 @@ from sqlalchemy import event, func, select
 
 from app.db.session import get_db
 from app.main import app
-from app.models import QuranAyah, QuranPage, QuranReferenceSource, QuranSurah
-from app.quran import importer, pages
+from app.models import QuranAyah, QuranJuz, QuranPage, QuranReferenceSource, QuranSurah
+from app.quran import importer, metadata, pages
 from app.quran.importer import import_reference
 from app.quran.pages import EDITION_ID, PAGE_CATEGORY, PAGE_SOURCE_SHA256, load_page_ranges
 from app.quran.reference import (
@@ -84,6 +84,15 @@ def test_postgres_page_import_extends_numeric_data_and_resolves_every_page(pg_qu
         assert coordinates == list(data.ayahs)
 
     with pg_sessions.begin() as db:
+        # This still gives 604 ordered ranges with complete coverage, but changes page 121.
+        db.get(QuranPage, 121).start_ayah_number = 79
+    assert client.get("/quran/pages").status_code == 503
+    assert client.get("/quran/pages/121").status_code == 503
+    assert client.get("/quran/ayahs/5/78/page").status_code == 503
+    assert not client.get("/quran/metadata-availability").json()["mushaf_pages"]
+
+    with pg_sessions.begin() as db:
+        db.get(QuranPage, 121).start_ayah_number = 78
         db.delete(db.get(QuranPage, 604))
     assert client.get("/quran/pages").status_code == 503
     assert not client.get("/quran/metadata-availability").json()["mushaf_pages"]
@@ -151,9 +160,121 @@ def test_postgres_page_import_preserves_learner_history_and_dashboard(pg_quran_a
     assert all(response.status_code == 200 for response in before)
 
     with pg_sessions.begin() as db:
-        import_reference(db, data, with_pages=True)
+        import_reference(db, data, with_pages=True, with_metadata=True)
 
     assert [client.get(path).json() for path in paths] == [response.json() for response in before]
+
+
+def test_postgres_names_and_juz_extend_numeric_references_idempotently(pg_quran_api, pg_sessions):
+    client = pg_quran_api
+    data = load_reference_file()
+    with pg_sessions.begin() as db:
+        import_reference(db, data)
+
+    assert client.get("/quran/surahs").json()[0] == {"surah_number": 1, "ayah_count": 7}
+    assert client.get("/quran/juzs").status_code == 503
+    assert client.get("/quran/ayahs/3/93/juz").status_code == 503
+    assert client.get("/quran/metadata-availability").json() == {
+        "arabic_surah_names": False, "latin_surah_names": False, "juz_mapping": False, "mushaf_pages": False,
+    }
+
+    for _ in range(2):
+        with pg_sessions.begin() as db:
+            assert import_reference(db, data, with_metadata=True).already_loaded
+
+    assert client.get("/quran/metadata-availability").json() == {
+        "arabic_surah_names": True, "latin_surah_names": True, "juz_mapping": True, "mushaf_pages": False,
+    }
+    names_response = client.get("/quran/surahs")
+    assert names_response.headers["link"] == '</quran/reference-source>; rel="describedby"'
+    names = names_response.json()
+    assert names == [
+        {**name, "ayah_count": surah.ayah_count}
+        for name, surah in zip(metadata.load_names(), data.surahs, strict=True)
+    ]
+    assert names[0] == {
+        "surah_number": 1, "ayah_count": 7, "name_ar": "الفاتحة", "name_latin": "Al-Fatihah",
+    }
+    assert names[20]["name_latin"] == "Al-Anbiya"
+    assert names[54]["name_latin"] == "Ar-Rahman"
+    assert names[113]["name_latin"] == "An-Nas"
+
+    entries = client.get("/quran/juzs").json()["juzs"]
+    actual = [
+        (entry["juz_number"],
+         (entry["start"]["surah_number"], entry["start"]["ayah_number"]),
+         (entry["end"]["surah_number"], entry["end"]["ayah_number"]))
+        for entry in entries
+    ]
+    assert actual == metadata.load_juz_ranges(data.ayahs)
+    indexed = {coordinate: rank for rank, coordinate in enumerate(data.ayahs)}
+    assert tuple(
+        coordinate for _, start, end in actual
+        for coordinate in data.ayahs[indexed[start]:indexed[end] + 1]
+    ) == data.ayahs
+
+    # Publisher marker-backed starts at 3:93 and 9:93 and endpoints on both sides.
+    assert actual[3] == (4, (3, 93), (4, 23))
+    assert actual[10] == (11, (9, 93), (11, 5))
+    for coordinate, number in (("3/92", 3), ("3/93", 4), ("4/23", 4),
+                               ("9/92", 10), ("9/93", 11), ("114/6", 30)):
+        assert client.get(f"/quran/ayahs/{coordinate}/juz").json() == entries[number - 1]
+        assert client.get(f"/quran/juzs/{number}").json() == entries[number - 1]
+    for path in ("/quran/juzs/0", "/quran/juzs/31", "/quran/ayahs/114/7/juz"):
+        assert client.get(path).status_code == 404
+
+    with pg_sessions() as db:
+        assert db.scalar(select(func.count()).select_from(QuranJuz)) == 30
+        assert db.scalar(select(func.count()).select_from(QuranReferenceSource)) == 4
+        assert db.execute(
+            select(QuranAyah.surah_number, QuranAyah.ayah_number)
+            .order_by(QuranAyah.surah_number, QuranAyah.ayah_number)
+        ).all() == list(data.ayahs)
+
+
+def test_postgres_corrupt_names_and_juz_fail_independently(pg_quran_api, pg_sessions):
+    client = pg_quran_api
+    data = load_reference_file()
+    with pg_sessions.begin() as db:
+        import_reference(db, data, with_metadata=True, with_pages=True)
+        db.get(QuranSurah, 1).name_latin = "Changed"
+        db.get(QuranJuz, 4).start_ayah_number = 94
+
+    assert client.get("/quran/metadata-availability").json() == {
+        "arabic_surah_names": True, "latin_surah_names": False, "juz_mapping": False, "mushaf_pages": True,
+    }
+    assert client.get("/quran/surahs").json()[0] == {
+        "surah_number": 1, "ayah_count": 7, "name_ar": "الفاتحة",
+    }
+    assert client.get("/quran/juzs").status_code == 503
+    assert client.get("/quran/juzs/4").status_code == 503
+    assert client.get("/quran/ayahs/3/93/juz").status_code == 503
+    assert client.get("/quran/ayahs/3/93").status_code == 200
+    assert client.get("/quran/pages").status_code == 200
+    with pytest.raises(ValueError, match="SURAH_NAMES_LATIN contains different or partial data"):
+        with pg_sessions.begin() as db:
+            import_reference(db, data, with_metadata=True)
+
+
+def test_postgres_juz_conflict_rolls_back_initial_name_import(pg_quran_api, pg_sessions):
+    data = load_reference_file()
+    with pg_sessions.begin() as db:
+        import_reference(db, data)
+        db.add(QuranJuz(juz_number=1, start_surah_number=1, start_ayah_number=1))
+
+    with pytest.raises(ValueError, match="Juz mappings contain different or partial data"):
+        with pg_sessions.begin() as db:
+            import_reference(db, data, with_metadata=True, with_pages=True)
+
+    with pg_sessions() as db:
+        assert db.get(QuranSurah, 1).name_ar is None
+        assert db.get(QuranSurah, 1).name_latin is None
+        assert db.get(QuranReferenceSource, metadata.ARABIC_NAMES.category) is None
+        assert db.get(QuranReferenceSource, metadata.LATIN_NAMES.category) is None
+        assert db.scalar(select(func.count()).select_from(QuranJuz)) == 1
+        assert db.scalar(select(func.count()).select_from(QuranPage)) == 0
+        assert db.scalar(select(func.count()).select_from(QuranAyah)) == 6236
+    assert pg_quran_api.get("/quran/juzs").status_code == 503
 
 
 @pytest.fixture

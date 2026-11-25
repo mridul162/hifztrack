@@ -4,6 +4,8 @@ from pydantic import BaseModel
 class SurahReferenceRead(BaseModel):
     surah_number: int
     ayah_count: int
+    name_ar: str | None = None
+    name_latin: str | None = None
 
 
 class AyahReferenceRead(BaseModel):
@@ -38,6 +40,16 @@ class MushafPageListRead(BaseModel):
 class MushafPageLookupRead(BaseModel):
     edition: MushafEditionRead
     page: MushafPageRead
+
+
+class JuzRead(BaseModel):
+    juz_number: int
+    start: AyahReferenceRead
+    end: AyahReferenceRead
+
+
+class JuzListRead(BaseModel):
+    juzs: list[JuzRead]
 
 
 class QuranMetadataAvailabilityRead(BaseModel):

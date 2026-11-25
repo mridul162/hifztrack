@@ -17,11 +17,14 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | PATCH | `/groups/{id}/members/{membership_id}` | Admin update a member's role/state; last-active-admin invariant enforced |
 | POST | `/groups/{id}/leave` | Leave own active membership; preserve LEFT episode |
 | GET/PATCH | `/groups/{group_id}/sharing/me` | Get or update the authenticated owner's active membership settings; target user and membership IDs are not accepted. Archived groups are read-only for settings changes. |
-| GET | `/quran/surahs` | List Surah numbers and Ayah counts; returns 503 until a complete reference import is available |
+| GET | `/quran/surahs` | List Surah numbers and Ayah counts plus available `name_ar` and `name_latin` fields |
 | GET | `/quran/surahs/{surah_number}/ayahs` | List canonical Ayah numbers for one Surah |
 | GET | `/quran/ayahs/{surah_number}/{ayah_number}` | Resolve the stable Surah/Ayah coordinate |
 | GET | `/quran/reference-source` | Read provenance, verification method and usage conditions for imported reference categories |
 | GET | `/quran/metadata-availability` | Read Boolean availability for Arabic names, Latin names, Juz mappings and Mushaf pages |
+| GET | `/quran/juzs` | List all 30 ordered Juz with inclusive canonical ranges in `{juzs}` |
+| GET | `/quran/juzs/{juz_number}` | Resolve one Juz to its inclusive canonical range |
+| GET | `/quran/ayahs/{surah_number}/{ayah_number}/juz` | Resolve a canonical Ayah to its Juz |
 | GET | `/quran/pages` | List all 604 ordered pages with inclusive canonical ranges and edition |
 | GET | `/quran/pages/{page_number}` | Resolve one page to its inclusive canonical range and edition |
 | GET | `/quran/ayahs/{surah_number}/{ayah_number}/page` | Resolve a canonical Ayah to its page in the approved edition |
@@ -41,7 +44,7 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | Feature | Candidate operations | Scope rules |
 |---|---|---|
 | AUTH-01 / USER-01 | register, login, logout, current profile, update profile | Own account only; never expose credentials/secrets. |
-| QURAN-01 | numeric Surah/Ayah lookup, metadata availability, Madani Mushaf page lookup in both directions and source provenance | Read-only. Names and Juz availability are false while those categories remain gated under DEC-002. |
+| QURAN-01 | Surah/Ayah, metadata availability, Juz and Madani page lookup in both directions, and source provenance | Read-only. Categories are available only when their provenance and stored values match the approved version. |
 | MEM-01 | read/update Ayah status; create/list/cancel/correct Sabaq submissions | Owner-only from the authenticated session; numeric canonical references only; activity and current status are independent; submission history is paginated and preserved. |
 | REV-01 | `POST /revision`, `GET /revision/me?limit=&offset=` | Owner-only append and list operations. Group revision reads follow SHARE-01 settings. |
 | GROUP-01 / GROUP-02 | create/update group, invite/join/leave, list members, change roles | Membership and role scoped; administrative actions checked server-side. Join requests are an extended proposal. |
@@ -49,7 +52,9 @@ The API uses FastAPI and Pydantic schemas; enforce access in the backend. AUTH-0
 | DASH-01 / ANALYTICS-01 | `GET /dashboard/me`, `GET /groups/{group_id}/dashboard` | Read-only owner and group views under ADR-019. Group metrics and activity follow SHARE-01. |
 | MENTOR-01/02 | assignment and assessment resources (Release 2) | Assigned scope, learner consent, and audit required. |
 
-The new page list returns `{edition, pages}`. Single page and inverse lookups return `{edition, page}`. Each page has `page_number`, `start` and `end`, where each endpoint carries `surah_number` and `ayah_number`. The edition contains `id: "madani-1441h-hafs"`, its display `name`, `source_url`, `license_url` and `attribution`. Missing or incomplete imports return 503 on page endpoints. Invalid numeric pages and unknown canonical Ayahs return 404 under the applicable reference data checks. The existing numeric response shapes and the `SURAH_AYAH_ORDER` provenance record continue to work. The provenance list also includes `MUSHAF_PAGES` after import.
+Each Juz has `juz_number`, `start` and `end`. The page list returns `{edition, pages}`. Single page and inverse page lookups return `{edition, page}`. Each page has `page_number`, `start` and `end`. Both endpoints of each range carry `surah_number` and `ayah_number`. The edition contains `id: "madani-1441h-hafs"`, its display `name`, `source_url`, `license_url` and `attribution`.
+
+Missing, incomplete or inconsistent mappings return 503. Invalid page and Juz numbers and unknown canonical Ayahs return 404 after the applicable checks. If a name category is unavailable, `/quran/surahs` omits that field across the response and continues serving numeric coordinates. The Boolean availability endpoint reports each category independently. Name and Juz responses link to attribution at `/quran/reference-source`; the available source records use `SURAH_AYAH_ORDER`, `SURAH_NAMES_AR`, `SURAH_NAMES_LATIN`, `JUZ_BOUNDARIES` and `MUSHAF_PAGES`.
 
 ## Dashboard response contracts
 

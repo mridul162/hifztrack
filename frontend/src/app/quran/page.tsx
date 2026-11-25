@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { MushafPagePicker } from "@/components/mushaf-page-picker";
+import { JuzPicker, MushafPagePicker } from "@/components/mushaf-page-picker";
+import type { Surah } from "@/components/surah-select";
 
-type Surah = { surah_number: number; ayah_count: number };
 type ReferenceSource = {
   category: string;
   source_name: string;
@@ -78,12 +78,12 @@ export default function QuranReferencePage() {
           </p>
           <h1 className="mt-2 text-3xl font-semibold">Quran references</h1>
           <p className="mt-3 max-w-2xl leading-7 text-slate-600">
-            Browse canonical Surah and Ayah numbers or look up a Madani Mushaf page.
+            Browse by Surah, Ayah, Juz, or Madani Mushaf page.
           </p>
-          <p className="mt-2 text-sm text-slate-600">Surah names and Juz mappings are currently unavailable.</p>
         </header>
 
-        <section className="mb-6 rounded-xl border border-emerald-950/10 bg-white p-5 shadow-sm" aria-label="Browse by Mushaf page">
+        <section className="mb-6 grid gap-5 rounded-xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:grid-cols-2" aria-label="Browse by Juz or Mushaf page">
+          <JuzPicker />
           <MushafPagePicker />
         </section>
 
@@ -122,6 +122,8 @@ export default function QuranReferencePage() {
                     ].join(" ")}
                   >
                     <span className="block font-medium">Surah {surah.surah_number}</span>
+                    {surah.name_latin && <span className="block">{surah.name_latin}</span>}
+                    {surah.name_ar && <span className="block" lang="ar" dir="rtl">{surah.name_ar}</span>}
                     <span className="text-slate-600">{surah.ayah_count} Ayahs</span>
                   </button>
                 ))}

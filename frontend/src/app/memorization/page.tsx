@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-import { MushafPagePicker } from "@/components/mushaf-page-picker";
+import { JuzPicker, MushafPagePicker } from "@/components/mushaf-page-picker";
+import { SurahSelect, type Surah } from "@/components/surah-select";
 import { getJson, mutate } from "@/lib/auth";
 
-type Surah = { surah_number: number; ayah_count: number };
 type Status = "NOT_STARTED" | "LEARNING" | "MEMORIZED" | "STRONG";
 type Progress = { surah_number: number; ayah_number: number; memorization_status: Status; updated_at: string };
 type Submission = {
@@ -178,9 +178,8 @@ export default function MemorizationPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div><h2 id="progress-heading" className="text-lg font-semibold">Current Ayah status</h2><p className="mt-1 text-sm text-slate-600">Ayahs without a saved status are Not started.</p></div>
                 <label className="text-sm font-medium" htmlFor="browse-surah">Browse Surah</label>
-                <select id="browse-surah" className="rounded-md border border-slate-300 px-3 py-2" value={selectedSurah} onChange={(event) => setSelectedSurah(Number(event.target.value))}>
-                  {surahs.map((surah) => <option key={surah.surah_number} value={surah.surah_number}>Surah {surah.surah_number}</option>)}
-                </select>
+                <SurahSelect id="browse-surah" surahs={surahs} value={selectedSurah}
+                  onChange={(value) => setSelectedSurah(Number(value))} />
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {Array.from({ length: selectedAyahCount }, (_, index) => index + 1).map((ayahNumber) => {
@@ -199,16 +198,25 @@ export default function MemorizationPage() {
             <section className="rounded-xl border border-emerald-950/10 bg-white p-5 shadow-sm" aria-labelledby="sabaq-heading">
               <h2 id="sabaq-heading" className="text-lg font-semibold">{correctingId ? "Correct Sabaq entry" : "Submit Sabaq activity"}</h2>
               <p className="mt-1 text-sm text-slate-600">Use a numeric start and end reference. Repeated ranges remain separate history entries.</p>
-              <div className="mt-4">
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <JuzPicker onApply={(coordinates) => setRange((current) => ({ ...current, ...coordinates }))} />
                 <MushafPagePicker onApply={(coordinates) => setRange((current) => ({ ...current, ...coordinates }))} />
               </div>
               <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={(event) => void saveSubmission(event)}>
                 {([
                   ["start_surah_number", "Start Surah", 1, 114], ["start_ayah_number", "Start Ayah", 1, 286],
                   ["end_surah_number", "End Surah", 1, 114], ["end_ayah_number", "End Ayah", 1, 286],
-                ] as const).map(([field, label, min, max]) => <label key={field} className="grid gap-1 text-sm font-medium">
-                  {label}<input className="rounded-md border border-slate-300 px-3 py-2" type="number" min={min} max={max} required value={range[field]} onChange={(event) => setRangeField(field, event.target.value)} />
-                </label>)}
+                ] as const).map(([field, label, min, max]) => <div key={field} className="grid gap-1 text-sm font-medium">
+                  <label htmlFor={`sabaq-${field}`}>{label}</label>
+                  {field.endsWith("surah_number") ? (
+                    <SurahSelect id={`sabaq-${field}`} surahs={surahs} value={range[field]}
+                      onChange={(value) => setRangeField(field, value)} />
+                  ) : (
+                    <input id={`sabaq-${field}`} className="rounded-md border border-slate-300 px-3 py-2" type="number"
+                      min={min} max={max} required value={range[field]}
+                      onChange={(event) => setRangeField(field, event.target.value)} />
+                  )}
+                </div>)}
                 <label className="grid gap-1 text-sm font-medium">Activity date<input className="rounded-md border border-slate-300 px-3 py-2" type="date" required value={range.activity_date} onChange={(event) => setRangeField("activity_date", event.target.value)} /></label>
                 <div className="flex items-end gap-3">
                   <button className="rounded-md bg-emerald-800 px-4 py-2 font-medium text-white disabled:opacity-60" disabled={saving} type="submit">{saving ? "Saving…" : correctingId ? "Save correction" : "Submit Sabaq"}</button>

@@ -6,7 +6,8 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import QuranPage, QuranReferenceSource, QuranSurah
+from app.models import QuranPage, QuranReferenceSource
+from app.quran.ranges import Coordinate, checked_stored_ranges, range_boundaries
 from app.quran.reference import reference_file_path
 
 
@@ -21,6 +22,7 @@ PAGE_SOURCE_VERSION = "v1.1.1"
 PAGE_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/"
 PAGE_SOURCE_SHA256 = "43d1d7ebaf009340d943a4d43bcbddfedd2c649a8410a37ee276cb7f7520d60c"
 PAGE_DATA_SHA256 = "0122616bcfd941438344ea8cb46420f79ef32c75de53c921ecc269c07e10da3a"
+PAGE_RANGES_SHA256 = "b872e1168fd4022f032d460189752f7112f8e3a784dd728024a6b169ec8ca45a"
 PAGE_USAGE = (
     f"Page index by Quran.ws (Quran SVG Elements {PAGE_SOURCE_VERSION}), CC BY 4.0 "
     f"({PAGE_LICENSE_URL}). Normalized by HifzTrack to "
@@ -34,30 +36,11 @@ PAGE_VERIFICATION = (
     "The 25 different starts from the 1405H layout were confirmed."
 )
 
-Coordinate = tuple[int, int]
-
-
 @dataclass(frozen=True)
 class PageRange:
     page_number: int
     start: Coordinate
     end: Coordinate
-
-
-def ranges_from_starts(
-    starts: list[tuple[int, Coordinate]], coordinates: tuple[Coordinate, ...]
-) -> list[PageRange]:
-    if [number for number, _ in starts] != list(range(1, PAGE_COUNT + 1)):
-        raise ValueError("Expected Mushaf pages 1 through 604 in order")
-    rank = {coordinate: index for index, coordinate in enumerate(coordinates)}
-    indexes = [rank.get(coordinate, -1) for _, coordinate in starts]
-    if indexes[0] != 0 or indexes != sorted(set(indexes)):
-        raise ValueError("Mushaf page starts must be valid and strictly increasing from 1:1")
-    end_indexes = [index - 1 for index in indexes[1:]] + [len(coordinates) - 1]
-    return [
-        PageRange(number, start, coordinates[end_index])
-        for (number, start), end_index in zip(starts, end_indexes, strict=True)
-    ]
 
 
 def load_page_ranges(
@@ -77,30 +60,26 @@ def load_page_ranges(
         )
         for row in data["pages"]
     ]
-    if ranges_from_starts([(page.page_number, page.start) for page in ranges], coordinates) != ranges:
+    starts = [(page.page_number, page.start) for page in ranges]
+    expected = range_boundaries(starts, coordinates, count=PAGE_COUNT, label="Mushaf page")
+    if [PageRange(*row) for row in expected] != ranges:
         raise ValueError("Mushaf page ends must cover the canonical Ayahs without gaps or overlaps")
     return ranges
 
 
 def page_starts(db: Session) -> list[tuple[int, Coordinate]]:
-    rows = db.scalars(select(QuranPage).order_by(QuranPage.page_number)).all()
-    return [
-        (row.page_number, (row.start_surah_number, row.start_ayah_number)) for row in rows
-    ]
+    rows = db.execute(
+        select(QuranPage.page_number, QuranPage.start_surah_number, QuranPage.start_ayah_number)
+        .order_by(QuranPage.page_number)
+    )
+    return [(number, (surah, ayah)) for number, surah, ayah in rows]
 
 
 def read_page_ranges(db: Session) -> list[PageRange] | None:
     source = db.get(QuranReferenceSource, PAGE_CATEGORY)
-    if source is None or source.source_sha256 != PAGE_SOURCE_SHA256:
+    if source is None or (source.source_version, source.source_sha256) != (PAGE_SOURCE_VERSION, PAGE_SOURCE_SHA256):
         return None
-
-    surahs = db.scalars(select(QuranSurah).order_by(QuranSurah.surah_number)).all()
-    coordinates = tuple(
-        (surah.surah_number, ayah_number)
-        for surah in surahs
-        for ayah_number in range(1, surah.ayah_count + 1)
+    ranges = checked_stored_ranges(
+        db, page_starts(db), count=PAGE_COUNT, label="Mushaf page", digest=PAGE_RANGES_SHA256
     )
-    try:
-        return ranges_from_starts(page_starts(db), coordinates)
-    except ValueError:
-        return None
+    return None if ranges is None else [PageRange(*row) for row in ranges]

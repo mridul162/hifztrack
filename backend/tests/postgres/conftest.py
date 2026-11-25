@@ -56,8 +56,8 @@ def postgres_engine():
             if not version.startswith("PostgreSQL "):
                 pytest.fail("PostgreSQL integration suite requires PostgreSQL")
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-            if revision != "0008_group_sharing":
-                pytest.fail("PostgreSQL integration suite requires migration revision 0008_group_sharing")
+            if revision != "0009_quran_surah_names":
+                pytest.fail("PostgreSQL integration suite requires migration revision 0009_quran_surah_names")
             existing_tables = set(connection.scalars(text(
                 "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
             )).all())

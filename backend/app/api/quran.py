@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models import QuranAyah, QuranReferenceSource, QuranSurah
+from app.quran.metadata import ARABIC_NAMES, JUZ_COUNT, LATIN_NAMES, names_available, read_juz_ranges
 from app.quran.pages import (
     EDITION_ID,
     EDITION_NAME,
@@ -15,8 +16,11 @@ from app.quran.pages import (
     read_page_ranges,
 )
 from app.quran.reference import SOURCE_CATEGORY
+from app.quran.ranges import Range
 from app.schemas.quran import (
     AyahReferenceRead,
+    JuzListRead,
+    JuzRead,
     MushafEditionRead,
     MushafPageListRead,
     MushafPageLookupRead,
@@ -29,6 +33,7 @@ from app.schemas.quran import (
 
 
 router = APIRouter(prefix="/quran", tags=["quran-reference"])
+PROVENANCE_LINK = '</quran/reference-source>; rel="describedby"'
 
 
 def _reference_issue(db: Session) -> str | None:
@@ -55,10 +60,22 @@ def list_reference_sources(db: Session = Depends(get_db)):
     ).all()
 
 
-@router.get("/surahs", response_model=list[SurahReferenceRead])
-def list_surahs(db: Session = Depends(get_db)):
+@router.get("/surahs", response_model=list[SurahReferenceRead], response_model_exclude_none=True)
+def list_surahs(response: Response, db: Session = Depends(get_db)):
     _require_reference_data(db)
-    return db.scalars(select(QuranSurah).order_by(QuranSurah.surah_number)).all()
+    surahs = list(db.scalars(select(QuranSurah).order_by(QuranSurah.surah_number)))
+    arabic = names_available(db, surahs, ARABIC_NAMES)
+    latin = names_available(db, surahs, LATIN_NAMES)
+    if arabic or latin:
+        response.headers["Link"] = PROVENANCE_LINK
+    return [
+        SurahReferenceRead(
+            surah_number=row.surah_number, ayah_count=row.ayah_count,
+            name_ar=row.name_ar if arabic else None,
+            name_latin=row.name_latin if latin else None,
+        )
+        for row in surahs
+    ]
 
 
 @router.get("/surahs/{surah_number}/ayahs", response_model=SurahAyahListRead)
@@ -112,11 +129,16 @@ def _page_response(page: PageRange) -> MushafPageRead:
 
 @router.get("/metadata-availability", response_model=QuranMetadataAvailabilityRead)
 def metadata_availability(db: Session = Depends(get_db)):
+    if _reference_issue(db) is not None:
+        return QuranMetadataAvailabilityRead(
+            arabic_surah_names=False, latin_surah_names=False, juz_mapping=False, mushaf_pages=False
+        )
+    surahs = list(db.scalars(select(QuranSurah).order_by(QuranSurah.surah_number)))
     return QuranMetadataAvailabilityRead(
-        arabic_surah_names=False,
-        latin_surah_names=False,
-        juz_mapping=False,
-        mushaf_pages=_reference_issue(db) is None and read_page_ranges(db) is not None,
+        arabic_surah_names=names_available(db, surahs, ARABIC_NAMES),
+        latin_surah_names=names_available(db, surahs, LATIN_NAMES),
+        juz_mapping=read_juz_ranges(db) is not None,
+        mushaf_pages=read_page_ranges(db) is not None,
     )
 
 
@@ -147,3 +169,48 @@ def resolve_ayah_page(surah_number: int, ayah_number: int, db: Session = Depends
     if page is None:
         raise HTTPException(503, "Mushaf page mappings are unavailable")
     return MushafPageLookupRead(edition=MUSHAF_EDITION, page=_page_response(page))
+
+
+def _require_juz_ranges(db: Session) -> list[Range]:
+    ranges = read_juz_ranges(db)
+    if ranges is None:
+        raise HTTPException(503, "Juz mappings are unavailable")
+    return ranges
+
+
+def _juz_response(row: Range) -> JuzRead:
+    number, start, end = row
+    return JuzRead(
+        juz_number=number,
+        start=AyahReferenceRead(surah_number=start[0], ayah_number=start[1]),
+        end=AyahReferenceRead(surah_number=end[0], ayah_number=end[1]),
+    )
+
+
+@router.get("/juzs", response_model=JuzListRead)
+def list_juzs(response: Response, db: Session = Depends(get_db)):
+    _require_reference_data(db)
+    ranges = _require_juz_ranges(db)
+    response.headers["Link"] = PROVENANCE_LINK
+    return JuzListRead(juzs=[_juz_response(row) for row in ranges])
+
+
+@router.get("/juzs/{juz_number}", response_model=JuzRead)
+def resolve_juz(juz_number: int, response: Response, db: Session = Depends(get_db)):
+    if not 1 <= juz_number <= JUZ_COUNT:
+        raise HTTPException(404, "Juz not found")
+    _require_reference_data(db)
+    ranges = _require_juz_ranges(db)
+    response.headers["Link"] = PROVENANCE_LINK
+    return _juz_response(ranges[juz_number - 1])
+
+
+@router.get("/ayahs/{surah_number}/{ayah_number}/juz", response_model=JuzRead)
+def resolve_ayah_juz(surah_number: int, ayah_number: int, response: Response, db: Session = Depends(get_db)):
+    resolve_ayah(surah_number, ayah_number, db)
+    coordinate = (surah_number, ayah_number)
+    match = next((row for row in _require_juz_ranges(db) if row[1] <= coordinate <= row[2]), None)
+    if match is None:
+        raise HTTPException(503, "Juz mappings are unavailable")
+    response.headers["Link"] = PROVENANCE_LINK
+    return _juz_response(match)

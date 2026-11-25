@@ -122,6 +122,8 @@ The group dashboard reports the active member count and roster with roles, permi
 
 **Date:** 2026-11-25. **Status:** Owner-approved conventions. DEC-002 remains CONDITIONALLY APPROVED.
 
+ADR-021 supersedes the supplier choices for Surah names and Juz mappings. The original decision is recorded below.
+
 - Use Tanzil plain Arabic Surah names.
 - Use Quran.com-style simplified Latin Surah names. QUL `name_simple` is the candidate.
 - Use the Tanzil Juz convention, including Juz 4 from `3:93` and Juz 11 from `9:93`.
@@ -129,3 +131,13 @@ The group dashboard reports the active member count and roster with roles, permi
 - Keep Surah/Ayah canonical and maintain HifzTrack's normalized metadata. Display names cannot change identifiers or personal records. Alternative name conventions and additional Mushaf editions are deferred.
 
 Each category needs versioned provenance, applicable usage and redistribution terms, attribution, structural checks, and independent accuracy evidence before import. The Quran.ws numeric page index passed those gates for the selected 1441H edition. Arabic names, Latin names, and Juz mappings still need metadata-specific evidence. ADR-014 continues to govern the separate local Arabic verse-text release gate and initial exclusion of translations. [Category clearance](../../data/quran/validation/METADATA_CLEARANCE.md)
+
+## ADR-021: HifzTrack-maintained Quran reference metadata (DEC-002)
+
+**Date:** 2026-11-25. **Status:** Owner-approved. DEC-002 remains CONDITIONALLY APPROVED for the separate Arabic verse-text release gate.
+
+HifzTrack independently maintains versioned plain Arabic and simplified Latin Surah names and canonical Juz ranges. The names are display metadata. Surah/Ayah coordinates remain the stable identity for references and personal records. Juz 4 starts at `3:93` and Juz 11 at `9:93`. The single approved Mushaf edition remains the 604-page KFGQPC Madani 1441H Hafs, identified as `madani-1441h-hafs`.
+
+Tanzil, QUL and Quran.com are optional reference sources under applicable terms. Provider-specific permission is unnecessary when existing terms already cover the intended use. Every compiled category requires lawful sources, versioned provenance, attribution as applicable, structural validation and independent accuracy evidence. Previously cleared material remains usable under its existing terms. The application runs using its imported database references and local versioned import files, with no external Quran API dependency.
+
+ADR-014 continues to govern Arabic verse-text release evidence. Verse-text display, translations and additional Mushaf editions remain outside this work. [Compilation and verification](../../data/quran/validation/INDEPENDENT_METADATA.md)
